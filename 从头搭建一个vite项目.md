@@ -27,11 +27,7 @@ pnpm create vite my-vue-app --template vue-ts
 
     `pnpm add -D vite` 并创建一个 `index.html` 文件。相关操作不做更多介绍
 
-
-
 *执行成功之后即可得到一个初始框架项目，但是想要高效开发还远远不够....*
-
-
 
 # 二、搭配各种扩展插件
 
@@ -72,8 +68,6 @@ pnpm create vite my-vue-app --template vue-ts
    pnpm add --save-dev --save-exact prettier
    ```
 
-
-
 2. 创建配置文件
    
    ```shell
@@ -108,8 +102,6 @@ pnpm create vite my-vue-app --template vue-ts
   - 或者你的配置文件如果使用了`useTab:true`，就算设置了`tabWidth:2`，某些文件也会使用4个空格的制表符
 
 - `npx prettier . --check` 检查文件是否已经格式化
-  
-  
 3. 通过编辑器运行`Prettier`
 
 > 以`vscode`为例说明。配置成功后可以通过键盘快捷键或者保存文件时自动运行。另外，编辑器插件将选择你本地版本的 Prettier，确保你在每个项目中使用正确的版本。[编辑器配置文档]([编辑器集成 · Prettier 中文网](https://prettier.nodejs.cn/docs/en/editors.html#google_vignette))
@@ -158,18 +150,16 @@ pnpm create vite my-vue-app --template vue-ts
   - 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
     
     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-48-36-image.png)
-  
-  
 
 - 如果你的项目中有`.editorconfig` ，Prettier 会对其进行解析，并将其属性转换为对应的 Prettier 配置。此配置会被 `.prettierrc` 等覆盖。
 
 - （共享 Prettier 配置很简单：只需发布???一个导出配置对象的模块，比如 `@company/prettier-config`，并在你的 `package.json` 中引用它：）
 
-
-
 ## 3. 添加代码校验扩展
 
 > 使用 Prettier 来解决代码格式问题，使用 linter 来解决代码质量问题。但是Linters 通常不仅包含代码质量规则，还包含风格规则。使用 Prettier 时，大多数风格规则都是不必要的，但更糟糕的是——它们可能与 Prettier 发生冲突！下面使用的是官方提供的解决方案：
+
+
 
 1. 安装`eslint` v9.x
    
@@ -178,6 +168,8 @@ pnpm create vite my-vue-app --template vue-ts
    关于查询具体规则，除了可以查看文档，我强烈推荐使用[@eslint/config-inspector](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Feslint%2Fconfig-inspector "https://github.com/eslint/config-inspector")，它目前已经被eslint内置，我们只需在项目中运行`npx eslint --inspect-config`，就会启动一个网页 ，可以很方便的查看已配置的插件和规
    
    如需要从旧版本升级，请前往官网查看迁移方法。另外，ESlint9.0支持的Node.js版本是LTSv18.18.0+和v20，不支持v19以及之前的所有版本。
+   
+   
    
    ```shell
    pnpm create @eslint/config@latest`
@@ -192,20 +184,22 @@ pnpm create vite my-vue-app --template vue-ts
    ## 并且项目根目录下增加了eslint.config.js文件
    ```
 
+
+
 2. 安装插件：以下是与eslint配合使用的扩展插件，且支持扁平模式
    
    ```shell
-   pnpm add vite-plugin-eslint2 ## 在 Vite 项目中集成 ESLint,在每次保存文件时自动运行 ESLint 检查
+   pnpm add vite-plugin-eslint2 ## 在 Vite 项目中集 ESLint,在每次保存文件时自动运行 ESLint 检查
    
    ## eslint的其他规范化插件
-   pnpm add eslint-plugin-markdown
-   pnpm add eslint-plugin-import
-   pnpm add eslint-plugin-unicorn
+   pnpm add -D eslint-plugin-markdown
+   pnpm add -D eslint-plugin-prettier
+   pnpm add -D eslint-config-prettier
    
-   pnpm add -D vue-eslint-parser ## 解析 Vue 文件的解析器，使 ESLint 能够理解和处理 Vue 的单文件组件
+   
    ```
-   
-   
+
+
 
 3. 在`eslint.config.js`中添加一些基础的校验规则，新版本配置文件同时还弃用了`.eslintignore`文件
    
@@ -214,6 +208,9 @@ pnpm create vite my-vue-app --template vue-ts
    import pluginJs from '@eslint/js';
    import tseslint from 'typescript-eslint';
    import pluginVue from 'eslint-plugin-vue';
+   import prettierPlugin from 'eslint-plugin-prettier';
+   import eslintConfigPrettier from 'eslint-config-prettier';
+   import markdown from "eslint-plugin-markdown";
    
    export default [
      { files: ['**/*.{js,mjs,cjs,ts,vue}']},
@@ -225,7 +222,10 @@ pnpm create vite my-vue-app --template vue-ts
          '**/build/**',
          '.git',
          '.vscode',
-         '.husky'
+         '.husky',
+         'Dockerfile',
+         'package-lock.json',
+         'pnpm-lock.yaml'
        ]
      },
      // `languageOptions` 配置了浏览器环境下的全局变量。
@@ -243,10 +243,21 @@ pnpm create vite my-vue-app --template vue-ts
      pluginJs.configs.recommended,
      ...tseslint.configs.recommended,
      ...pluginVue.configs['flat/essential'],
+     ...markdown.configs.recommended,
      {
        files: ['**/*.vue'],
-       // 为 `.vue` 文件指定了 TypeScript 解析器
-       languageOptions: { parserOptions: { parser: tseslint.parser } }
+       languageOptions: {
+         parser: pluginVue.parser, // 用于解析 <template> 中的 Vue 模板
+         parserOptions: {
+           ecmaVersion: 'latest',
+           sourceType: 'module',
+           parser: tseslint.parser, // 用于解析 <script> 中的 TypeScript
+           ecmaFeatures: {
+             jsx: true,
+             tsx: true
+           }
+         }
+       }
      },
      // 自定义的rules规则
      {
@@ -259,22 +270,78 @@ pnpm create vite my-vue-app --template vue-ts
    ]
    ```
 
-4. 此时可以使用命令检查和修复指定文件的代码语法：
+
+
+4. 在`vite.config.ts`中配置eslint插件
+   
+   ```ts
+   // 在启动项目和打包代码时进行代码检查, 如果检查有error类型的问题就启动或打包失败, warn类型的问题不影响启动和打包
+   import eslint from 'vite-plugin-eslint2';
+   // https://vite.dev/config/
+   export default defineConfig({
+     plugins: [eslint({ lintOnStart: true, cache: false, fix: true })]
+   });
+   ```
+
+
+
+5. 此时可以使用命令检查和修复文件的代码语法：
    
    ```shell
-   npx eslint yourFilesPath(eg:./src/App.vue) ## 检查
+   npx eslint yourFilesPath(eg:./src/App.vue) ## 检查指定文件
    npx eslint yourFilesPath(eg:./src/App.vue) --fix ## 修复
+   
+   ## or 
+   pnpm eslint . ## 检查所有文件
+   pnpm eslint . --fix ## 修复
    ```
-   
-   如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。所以需要和`prettier`一样在编辑器中运行`eslint`
-   
-   
 
-5. 通过编辑器运行`eslint`
-- 安装插件`eslint`
-  
-  <img title="" src="file:///Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-17-26-21-image.png" alt="" data-align="center">
+        
 
-- 勾选扁平模式（打开设置搜索use flat config）
-  
-  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-08-09-41-10-image.png)
+6. 通过编辑器运行`eslint`
+   
+   执行上述命令后，如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。所以需要和`prettier`一样在编辑器中运行`eslint`
+   
+   -  安装插件`eslint`扩展插件
+     
+     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
+     
+     
+   
+   - 勾选开启使用插件
+     
+     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
+     
+     
+   
+   - 勾选开启扁平模式（打开设置搜索use flat config）
+     
+     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
+     
+     
+   
+   - 下面是我编辑器setting.json关于eslint的配置
+     
+     ```json
+     // eslint配置
+       "eslint.useFlatConfig": true,
+       "eslint.enable": true,
+       "eslint.run": "onType",
+       "eslint.validate": [
+         "javascript",
+         "javascriptreact",
+         "typescript",
+         "typescriptreact",
+         "vue",
+         "html",
+         "json",
+         "markdown"
+       ],
+       "eslint.codeAction.showDocumentation": {
+         "enable": false
+       },
+     ```
+
+
+
+## 4. 添加style样式代码格式化扩展（css、scss、less）
