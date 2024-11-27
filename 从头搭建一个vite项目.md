@@ -1,4 +1,4 @@
-# 
+
 
 # 一、初始搭建
 
@@ -59,9 +59,10 @@ pnpm add sass sass-loader -D
    
    ## 这将会在项目中添加一个空的配置文件，告诉编辑器和其它工具已经启用`Prettier`
    ```
-- 命令执行成功之后可在项目根目录发现文件`.prettierrc`，可以为配置文件添加以下简单内容（缩进默认为2个空格，就没有再进行设置，更多参数默认值请看[文档]([Options · Prettier](https://prettier.io/docs/en/options))）：
+
+	- 命令执行成功之后可在项目根目录发现文件`.prettierrc`，可以为配置文件添加以下简单内容（缩进默认为2个空格，就没有再进行设置，更多参数默认值请看[文档]([Options · Prettier](https://prettier.io/docs/en/options))）：
   
-  ```json
+	```json
   {
       "jsxSingleQuote": false, // 在JSX中使用双引号
       "singleQuote": true, // 在普通代码中使用单引号
@@ -73,121 +74,118 @@ pnpm add sass sass-loader -D
   }
   ```
 
-- `pnpm exec prettier . --write` 格式化所有内容
+	- `pnpm exec prettier . --write` 格式化所有内容
   
-  - 如果某些文件格式化没有生效，比如缩进还是4个空格，请检查编辑设置是否冲突；比如VScode，可以在编辑的`setting.json`中检查比如json文件是否使用了其他格式器：
+	  - 如果某些文件格式化没有生效，比如缩进还是4个空格，请检查编辑设置是否冲突；比如VScode，可以在编辑的`setting.json`中检查比如json文件是否使用了其他格式器：
   
-  ```json
-  "[json]": {
-      "editor.defaultFormatter": "xxxx"
-  }
-  ```
+		```json
+		  "[json]": {
+		      "editor.defaultFormatter": "xxxx"
+		  }
+		 ```
   
-  - 或者你的配置文件如果使用了`useTab:true`，就算设置了`tabWidth:2`，某些文件也会使用4个空格的制表符
+	  - 或者你的配置文件如果使用了`useTab:true`，就算设置了`tabWidth:2`，某些文件也会使用4个空格的制表符
 
-- `npx prettier . --check` 检查文件是否已经格式化
+	- `npx prettier . --check` 检查文件是否已经格式化
+
 3. 通过编辑器运行`Prettier`
 
-> 以`vscode`为例说明。配置成功后可以通过键盘快捷键或者保存文件时自动运行。另外，编辑器插件将选择你本地版本的 Prettier，确保你在每个项目中使用正确的版本。[编辑器配置文档]([编辑器集成 · Prettier 中文网](https://prettier.nodejs.cn/docs/en/editors.html#google_vignette))
+	> 以`vscode`为例说明。配置成功后可以通过键盘快捷键或者保存文件时自动运行。另外，编辑器插件将选择你本地版本的 Prettier，确保你在每个项目中使用正确的版本。[编辑器配置文档]([编辑器集成 · Prettier 中文网](https://prettier.nodejs.cn/docs/en/editors.html#google_vignette))
 
-- 在`vscode`中安装插件 `prettier-vscode`
+	- 在`vscode`中安装插件 `prettier-vscode`
 
-- 安装好后再介绍界面点击**齿轮**图标会出现一个菜单，选择**设置**可进入配置编辑页面，每一个配置都有对应解释，可以根据自己需要进行设置，或者打开编辑器`setting.json`文件编辑。
+	- 安装好后再介绍界面点击**齿轮**图标会出现一个菜单，选择**设置**可进入配置编辑页面，每一个配置都有对应解释，可以根据自己需要进行设置，或者打开编辑器`setting.json`文件编辑。
   
-  - 我设置后的setting.json文件如下：
+	- 我设置后的setting.json文件如下：
     
-    ```json
-    // prettier扩展配置
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "prettier.bracketSameLine": true,
-      "prettier.vueIndentScriptAndStyle": true,
-      "prettier.jsxSingleQuote": false,
-      "prettier.singleQuote": true,
-      "prettier.trailingComma": "none",
-      "prettier.insertPragma": true,
-      "prettier.requirePragma": false,
-      "[vue]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode" // 无论默认格式化器是什么，都使用 prettier
-      },
-    ```
+	 ```json
+	    // prettier扩展配置
+	      "editor.defaultFormatter": "esbenp.prettier-vscode",
+	      "prettier.bracketSameLine": true,
+	      "prettier.vueIndentScriptAndStyle": true,
+	      "prettier.jsxSingleQuote": false,
+	      "prettier.singleQuote": true,
+	      "prettier.trailingComma": "none",
+	      "prettier.insertPragma": true,
+	      "prettier.requirePragma": false,
+	      "[vue]": {
+	        "editor.defaultFormatter": "esbenp.prettier-vscode" // 无论默认格式化器是什么，都使用 prettier
+	      },
+	    ```
   
-  - 当`setting.json`和`.prettierrc`存在冲突时，通常情况下会以`.prettierrc`优先，但是如 `editor.tabSize` 或 `editor.insertSpaces`可能会在特定场景中影响格式化，还有上文提到的为特定文件类型定义格式化设置（如 `"[json]"`）。如果这样设置，编辑器可能会在格式化特定文件类型时优先使用这些设置，而不遵循 `.prettierrc` 配置。
+	  - 当`setting.json`和`.prettierrc`存在冲突时，通常情况下会以`.prettierrc`优先，但是如 `editor.tabSize` 或 `editor.insertSpaces`可能会在特定场景中影响格式化，还有上文提到的为特定文件类型定义格式化设置（如 `"[json]"`）。如果这样设置，编辑器可能会在格式化特定文件类型时优先使用这些设置，而不遵循 `.prettierrc` 配置。
   
-  - 如果项目中不存在`.prettierrc`文件时，`setting.json`将作为后备格式器美化代码格式。
+	  - 如果项目中不存在`.prettierrc`文件时，`setting.json`将作为后备格式器美化代码格式。
 
-- 配置好后如果你想开启**保存**文件时**自动格式化**，需要在`setting.json`中添加：
+	- 配置好后如果你想开启**保存**文件时**自动格式化**，需要在`setting.json`中添加：
   
-  ```json
-  // 保存时格式化当前文件（具体取决于 Prettier 本身支持的语言）
-  "editor.formatOnSave": true
-  // 如果你只想在保存时格式化指定的文件，如JavaScript：
-  "editor.formatOnSave": false
-  "[javascript]": {
-      "editor.formatOnSave": true
-  }
-  ```
+	  ```json
+	  // 保存时格式化当前文件（具体取决于 Prettier 本身支持的语言）
+	  "editor.formatOnSave": true
+	  // 如果你只想在保存时格式化指定的文件，如JavaScript：
+	  "editor.formatOnSave": false
+	  "[javascript]": {
+	      "editor.formatOnSave": true
+	  }
+	  ```
 
-- 如果想开启使用键盘快捷键格式化当前文件，或者当前选中代码，需要下载一个插件（VScode）：`Formatting Toggle`，下载好之后启用插件。
+	- 如果想开启使用键盘快捷键格式化当前文件，或者当前选中代码，需要下载一个插件（VScode）：`Formatting Toggle`，下载好之后启用插件。
   
-  <img src="file:///Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-49-19-image.png" title="" alt="" data-align="center">
+	  <img src="file:///Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-49-19-image.png" title="" alt="" data-align="center">
   
-  - 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
-    
+	- 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-48-36-image.png)
 
-- 如果你的项目中有`.editorconfig` ，Prettier 会对其进行解析，并将其属性转换为对应的 Prettier 配置。此配置会被 `.prettierrc` 等覆盖。
+	- 如果你的项目中有`.editorconfig` ，Prettier 会对其进行解析，并将其属性转换为对应的 Prettier 配置。此配置会被 `.prettierrc` 等覆盖。
 
-- （共享 Prettier 配置很简单：只需发布???一个导出配置对象的模块，比如 `@company/prettier-config`，并在你的 `package.json` 中引用它：）
+	- （共享 Prettier 配置很简单：只需发布???一个导出配置对象的模块，比如 `@company/prettier-config`，并在你的 `package.json` 中引用它：）
 
 ## 2. 添加代码校验扩展
 
 > 使用 Prettier 来解决代码格式问题，使用 linter 来解决代码质量问题。但是Linters 通常不仅包含代码质量规则，还包含风格规则。使用 Prettier 时，大多数风格规则都是不必要的，但更糟糕的是——它们可能与 Prettier 发生冲突！下面使用的是官方提供的解决方案：
 
 1. 安装`eslint` v9.x
-   
+
    9.0版本弃用和删除了大量的API和规则，包括配置文件更新，Flat 取代 eslintrc。
-   
-   关于查询具体规则，除了可以查看文档，我强烈推荐使用[@eslint/config-inspector](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Feslint%2Fconfig-inspector "https://github.com/eslint/config-inspector")，它目前已经被eslint内置，我们只需在项目中运行`npx eslint --inspect-config`，就会启动一个网页 ，可以很方便的查看已配置的插件和规
-   
+   关于查询具体规则，除了可以查看文档，我强烈推荐使用[@eslint/config-inspector](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Feslint%2Fconfig-inspector "https://github.com/eslint/config-inspector")，它目前已经被eslint内置，我们只需在项目中运行`npx eslint --inspect-config`，就会启动一个网页 ，可以很方便的查看已配置的插件和规则；
    如需要从旧版本升级，请前往官网查看迁移方法。另外，ESlint9.0支持的Node.js版本是LTSv18.18.0+和v20，不支持v19以及之前的所有版本。
-   
-   ```shell
+   ```
    pnpm create @eslint/config@latest`
-   
-   ## 根据提示选择适合你项目的选项:
-   
-   (1) How would you like to use ESLint?
-   选择：To check syntax and find problems
-   
-   (2) What type of modules does your project use?
-   选择：JavaScript modules (import/export)
-   
-   (3) Which framework does your project use?
-   选择：Vue.js
-   
-   (4) Does your project use TypeScript?
-   选择：Yes
-   
-   (5) Where does your code run?
-   选择：Browser
-   
-   (6) What format do you want your config file to be in?
-   选择：JavaScript
-   
-   (7) Would you like to install them now?
-   选择：Yes
-   
-   (8) Which package manager do you want to use?
-   选择：pnpm
-   
-   ## 最后我的项目下载了这些依赖：
-   ## + @eslint/js 9.14.0
-   ## + eslint 9.14.0
-   ## + eslint-plugin-vue 9.30.0
-   ## + globals 15.12.0
-   ## + typescript-eslint 8.13.0
-   
-   ## 并且项目根目录下增加了eslint.config.js文件
+	   
+	   ## 根据提示选择适合你项目的选项:
+	   
+	   (1) How would you like to use ESLint?
+	   选择：To check syntax and find problems
+	   
+	   (2) What type of modules does your project use?
+	   选择：JavaScript modules (import/export)
+	   
+	   (3) Which framework does your project use?
+	   选择：Vue.js
+	   
+	   (4) Does your project use TypeScript?
+	   选择：Yes
+	   
+	   (5) Where does your code run?
+	   选择：Browser
+	   
+	   (6) What format do you want your config file to be in?
+	   选择：JavaScript
+	   
+	   (7) Would you like to install them now?
+	   选择：Yes
+	   
+	   (8) Which package manager do you want to use?
+	   选择：pnpm
+	   
+	   ## 最后我的项目下载了这些依赖：
+	   ## + @eslint/js 9.14.0
+	   ## + eslint 9.14.0
+	   ## + eslint-plugin-vue 9.30.0
+	   ## + globals 15.12.0
+	   ## + typescript-eslint 8.13.0
+	   
+	   ## 并且项目根目录下增加了eslint.config.js文件
    ```
 
 2. 安装插件：以下是与eslint配合使用的扩展插件，且支持扁平模式
@@ -238,7 +236,7 @@ pnpm add sass sass-loader -D
            globals: globals.browser 
        }
      },
-     // 这些recommended文件中已设置了很多规则，可以根据官网说明在rules中自行添加或修改一些规则
+     // recommended文件中已设置了很多规则，可以根据官网说明在rules中自行添加或修改一些规则
      // https://eslint.org/docs/latest/rules
      // https://typescript-eslint.io/rules
      // https://eslint.vuejs.org/rules/
@@ -265,7 +263,7 @@ pnpm add sass sass-loader -D
      {
        rules: {
            'no-var': 'error', // 不允许使用var定义
-           'prefer-const': 'error', // 强制在可能的情况下使用 const 声明变量，而不是 let
+           'prefer-const': 'error', // 强制在可能的情况下使用const声明变量，而不是 let
            'no-empty': ['error', { allowEmptyCatch: true }] // 允许catch空着
           }
       }
@@ -294,24 +292,22 @@ pnpm add sass sass-loader -D
    pnpm eslint . --fix ## 修复
    ```
 
-        
-
 6. 通过编辑器运行`eslint`
    
    执行上述命令后，如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。如果每次都需要执行命令才能检测那么效率也太低了，所以需要和`prettier`一样在编辑器中运行`eslint`
-- 安装插件`eslint`扩展插件
-  
-  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
-
-- 勾选开启使用插件
-  
-  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
-
-- 勾选开启扁平模式（打开设置搜索use flat config）
-  
-  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
-
-- 下面是我编辑器setting.json关于eslint的配置
+	- 安装插件`eslint`扩展插件
+	  
+	  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
+	
+	- 勾选开启使用插件
+	  
+	  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
+	
+	- 勾选开启扁平模式（打开设置搜索use flat config）
+	  
+	  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
+	
+	- 下面是我编辑器setting.json关于eslint的配置
   
   ```json
   // eslint配置
@@ -431,7 +427,7 @@ pnpm add sass sass-loader -D
 
 > 在git提交前再进行一次代码检查
 
-## 1. husky、lint-staged、@commitlint/cli
+## 1.  husky、lint-staged、@commitlint/cli
 
 1. `husky`:Husky 是一个 Git Hook 工具，可以帮助我们在 Git 事件发生时自动[运行脚本](https://so.csdn.net/so/search?q=%E8%BF%90%E8%A1%8C%E8%84%9A%E6%9C%AC&spm=1001.2101.3001.7020)。Git Hook 是一种机制，它允许在 Git 执行操作时自动运行特定脚本，以执行自定义操作。
 
@@ -439,7 +435,7 @@ pnpm add sass sass-loader -D
 
 3. `@commitlint/cli`是一个命令行工具，用于校验 Git 提交信息是否符合规范。它通常与 Husky 和 lint-staged 配合使用，以在提交代码前对提交信息进行校验，从而确保提交信息的格式和内容符合项目规范和约定。
 
-## 2.具体使用
+## 2. 具体使用
 
 1. 安装
    
@@ -449,8 +445,6 @@ pnpm add sass sass-loader -D
    pnpm add @commitlint/cli @commitlint/config-conventional -D
    ```
 
-
-
 2. 初始化`husky`
    
    > 这里初始化之后会在根目录添加一个`.husky`文件夹，里面有一个`pre-commit`文件和一个`_`文件夹。简单配置用不上`_`文件夹的内容且是不会提交git的，我就删掉了
@@ -459,8 +453,6 @@ pnpm add sass sass-loader -D
    pnpm exec husky init
    ```
 
-
-
 3. 在`pre-commit`中添加以下内容，用于提交前进行代码校验
    
    ```shell
@@ -468,8 +460,6 @@ pnpm add sass sass-loader -D
    
    pnpm lint-staged
    ```
-
-
 
 4. 手动在项目根目录添加`commitlint.config.ts`文件，用于编写提交信息的校验规则：
    
@@ -507,10 +497,7 @@ pnpm add sass sass-loader -D
        ]
      }
    };
-   
    ```
-
-
 
 5. 手动添加`commit-msg`文件
    
@@ -522,8 +509,6 @@ pnpm add sass sass-loader -D
    
    npx --no -- commitlint --edit ${1}
    ```
-
-
 
 6. 在`package.json`中配置`lint-staged`
    
@@ -558,8 +543,6 @@ pnpm add sass sass-loader -D
    }
    ```
 
-
-
 # 五、添加各种插件
 
 > 提高代码编写效率
@@ -571,8 +554,6 @@ pnpm add sass sass-loader -D
    ```shell
    pnpm add @types/node --save-dev
    ```
-   
-   
 
 2. 进入`vite.config.ts`
    
@@ -590,3 +571,89 @@ pnpm add sass sass-loader -D
      },
    })
    ```
+
+## 2. 自动导入ref等hook
+
+> 使用ref、reactive、computed等时不再需要手动import
+
+1. 下载`unplugin-auto-import`插件
+
+	```shell
+	pnpm add -D unplugin-auto-import	
+ ```
+
+2. `vite.config.ts`中配置
+	```ts
+	// vite.config.ts
+	import AutoImport from 'unplugin-auto-import/vite'
+	
+	export default defineConfig({
+	  plugins: [
+	    AutoImport({
+		    imports: ['vue', 'vue-router', 'pinia'],
+			dts: './auto-import.d.ts',
+			eslintrc: {
+				// 已存在文件设置默认 false，需要更新时再打开，第一次使用请设置为true
+				enabled: false,
+				filepath: './.eslintrc-auto-import.json',
+				globalsPropValue: true
+			}
+	    }),
+	  ],
+	})
+	```
+
+	设置完成之后根目录会自动生成`auto-import.d.ts`和`.eslintrc-auto-import.json`两个文件，如果没有就运行一下项目`pnpm dev`
+
+3. `eslint.config.js`中配置（注意扁平化后和引用方式和以前不一样了）
+	```js
+	import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
+	export default [
+		{
+			languageOptions: {
+				globals: {
+					// 其他配置
+					...autoImport.globals
+				}
+			}
+		},
+		// 其他配置
+	]
+	```
+
+4. `tsconfig.app.json`中加入`auto-import.d.ts`
+	```json
+	{
+		// 其他配置
+		"include": ["auto-import.d.ts", ...] // 如果不加这个还是会报错
+	}
+	```
+
+## 3. 自动导入自定义组件或UI组件
+
+> 自定义的组件无需手动import，UI组件无需手动注册
+
+1. 下载`unplugin-vue-components`插件
+	```
+	pnpm add -D unplugin-vue-components
+	```
+
+2. `vite.config.ts`中配置
+	```ts
+	// 这里只写了自定义组件的配置，ui组件的自动导入在每个框架教程中应该都有说明，也会下载这个插件，这里就不作说明了
+	import Components from 'unplugin-vue-components/vite'
+	
+	export default defineConfig({
+	  plugins: [
+	    Components({
+		    // src下所有的components文件夹组件都可以被自动导入
+		    dirs: ['src/**/components'],
+		    extensions: ['vue'],
+		    dts: 'src/components.d.ts',
+		    deep: true // 搜索子目录
+	    }),
+	  ],
+	})
+	```
+
+3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
