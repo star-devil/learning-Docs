@@ -23,42 +23,26 @@ pnpm create vite my-vue-app --template vue-ts
 
     其他模板：`vanilla`，`vanilla-ts`, `vue`, `vue-ts`，`react`，`react-ts`，`react-swc`，`react-swc-ts`，`preact`，`preact-ts`，`lit`，`lit-ts`，`svelte`，`svelte-ts`，`solid`，`solid-ts`，`qwik`，`qwik-ts`
 
-## 2. 手动安装
+## 2. 或者手动安装
 
     `pnpm add -D vite` 并创建一个 `index.html` 文件。相关操作不做更多介绍
 
 *执行成功之后即可得到一个初始框架项目，但是想要高效开发还远远不够....*
 
-# 二、搭配各种扩展插件
+# 二、 安装sass
 
-> 使用各种插件，提高代码编写效率
+> `sass`基于`Ruby`语言开发而成，因此 [安装](https://www.sass.hk/install/#)`sass`前需要[安装Ruby](http://rubyinstaller.org/downloads)。（注:mac下自带Ruby无需在安装Ruby!window请参考[官网教程]([安装Sass | Sass中文网](https://www.sass.hk/install/))）
 
-## 1. 使用文件路径别名
+```shell
+## 在项目中安装scss
+pnpm add sass sass-loader -D
+```
 
-1. 使用自定义符号代替指定路径，简化模块导入路径
-   
-   `pnpm add @types/node --save-dev`
+# 三、配置代码检查和格式化
 
-        
+> 使用各种lint和format插件，提高代码质量
 
-2. 进入`vite.config.ts`
-   
-   ```js
-   import path from 'path'
-   
-   export default defineConfig({
-   ......
-   resolve: {
-       alias: {
-           '@': path.resolve('./src'), // @代替src
-           '@c': path.resolve('./src/components') // @c代替./src/components
-           // 可根据后续开发情况自行添加
-           },
-       },
-   })
-   ```
-
-## 2. 添加代码格式化扩展
+## 1. 添加代码格式化扩展
 
 >    代码格式化工具可以使编码更专注，在协同开发时统一代码风格十分有用
 
@@ -155,11 +139,9 @@ pnpm create vite my-vue-app --template vue-ts
 
 - （共享 Prettier 配置很简单：只需发布???一个导出配置对象的模块，比如 `@company/prettier-config`，并在你的 `package.json` 中引用它：）
 
-## 3. 添加代码校验扩展
+## 2. 添加代码校验扩展
 
 > 使用 Prettier 来解决代码格式问题，使用 linter 来解决代码质量问题。但是Linters 通常不仅包含代码质量规则，还包含风格规则。使用 Prettier 时，大多数风格规则都是不必要的，但更糟糕的是——它们可能与 Prettier 发生冲突！下面使用的是官方提供的解决方案：
-
-
 
 1. 安装`eslint` v9.x
    
@@ -169,12 +151,36 @@ pnpm create vite my-vue-app --template vue-ts
    
    如需要从旧版本升级，请前往官网查看迁移方法。另外，ESlint9.0支持的Node.js版本是LTSv18.18.0+和v20，不支持v19以及之前的所有版本。
    
-   
-   
    ```shell
    pnpm create @eslint/config@latest`
    
-   ## 根据提示选择适合你项目的选项，最后我的项目下载了这些依赖：
+   ## 根据提示选择适合你项目的选项:
+   
+   (1) How would you like to use ESLint?
+   选择：To check syntax and find problems
+   
+   (2) What type of modules does your project use?
+   选择：JavaScript modules (import/export)
+   
+   (3) Which framework does your project use?
+   选择：Vue.js
+   
+   (4) Does your project use TypeScript?
+   选择：Yes
+   
+   (5) Where does your code run?
+   选择：Browser
+   
+   (6) What format do you want your config file to be in?
+   选择：JavaScript
+   
+   (7) Would you like to install them now?
+   选择：Yes
+   
+   (8) Which package manager do you want to use?
+   选择：pnpm
+   
+   ## 最后我的项目下载了这些依赖：
    ## + @eslint/js 9.14.0
    ## + eslint 9.14.0
    ## + eslint-plugin-vue 9.30.0
@@ -184,22 +190,18 @@ pnpm create vite my-vue-app --template vue-ts
    ## 并且项目根目录下增加了eslint.config.js文件
    ```
 
-
-
 2. 安装插件：以下是与eslint配合使用的扩展插件，且支持扁平模式
    
    ```shell
    pnpm add vite-plugin-eslint2 ## 在 Vite 项目中集 ESLint,在每次保存文件时自动运行 ESLint 检查
    
+   ## 解决prettier和eslint规则冲突的差劲啊
+   pnpm add -D eslint-plugin-prettier #基于 prettier 代码风格的 eslint 规则
+   pnpm add -D eslint-config-prettier #禁用所有与格式相关的 eslint 规则，解决 prettier 与 eslint 规则冲突，确保将其放在 extends 队列最后，这样它将覆盖其他配置
+   
    ## eslint的其他规范化插件
    pnpm add -D eslint-plugin-markdown
-   pnpm add -D eslint-plugin-prettier
-   pnpm add -D eslint-config-prettier
-   
-   
    ```
-
-
 
 3. 在`eslint.config.js`中添加一些基础的校验规则，新版本配置文件同时还弃用了`.eslintignore`文件
    
@@ -270,8 +272,6 @@ pnpm create vite my-vue-app --template vue-ts
    ]
    ```
 
-
-
 4. 在`vite.config.ts`中配置eslint插件
    
    ```ts
@@ -282,8 +282,6 @@ pnpm create vite my-vue-app --template vue-ts
      plugins: [eslint({ lintOnStart: true, cache: false, fix: true })]
    });
    ```
-
-
 
 5. 此时可以使用命令检查和修复文件的代码语法：
    
@@ -300,48 +298,295 @@ pnpm create vite my-vue-app --template vue-ts
 
 6. 通过编辑器运行`eslint`
    
-   执行上述命令后，如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。所以需要和`prettier`一样在编辑器中运行`eslint`
+   执行上述命令后，如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。如果每次都需要执行命令才能检测那么效率也太低了，所以需要和`prettier`一样在编辑器中运行`eslint`
+- 安装插件`eslint`扩展插件
+  
+  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
+
+- 勾选开启使用插件
+  
+  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
+
+- 勾选开启扁平模式（打开设置搜索use flat config）
+  
+  ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
+
+- 下面是我编辑器setting.json关于eslint的配置
+  
+  ```json
+  // eslint配置
+    "eslint.useFlatConfig": true,
+    "eslint.enable": true,
+    "eslint.run": "onType",
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "vue",
+      "html",
+      "json",
+      "markdown"
+    ],
+    "eslint.codeAction.showDocumentation": {
+      "enable": false
+    },
+  ```
+
+## 3. 添加style样式代码格式化扩展（css、scss、less）
+
+> css的lint工具是`stylelint`，用于检查css语法错误或者不合理的地方，也可以约束css书写顺序。注意，15版本的stylelint已经取消关于格式方面的约束规则，格式化全部交给了prettier。
+> 
+> 我项目里用的是scss，接下来的配置与scss相关，其他预处理器的配置都差不多，只是下载的扩展不一样。
+
+1. 安装`stylelint`和`scss`配置
    
-   -  安装插件`eslint`扩展插件
-     
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
-     
-     
+   ```shell
+   pnpm add -D stylelint # 当前是V16.0.0
+   pnpm add -D stylelint-config-standard-scss # 扩展stylelint-config-standard 和 stylelint-config-recommended-scss 共享配置
+   pnpm add -D postcss-html # 用于解析 HTML（和类 HTML）的 PostCSS语法，下面两个扩展会依赖这个插件
+   pnpm add -D stylelint-config-standard-vue # 提供 Vue 的相关规则
+   pnpm add -D stylelint-config-html # 提供 Html 的相关规则
    
-   - 勾选开启使用插件
-     
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
-     
-     
+   # 按照recess和bootstrap方式对css属性进行排序的插件（也可以自己定义规则）
+   pnpm add -D stylelint-config-recess-order
+   ```
+
+2. 创建`.stylelintrc.json`文件：
    
-   - 勾选开启扁平模式（打开设置搜索use flat config）
-     
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
-     
-     
+   ```json
+   // 标准配置开启了大约一半的内置规则,平时开发够用了，如果有特殊需求可以用rules自定义
+   {
+     "extends": [
+       "stylelint-config-standard-scss",
+       "stylelint-config-standard-vue/scss",
+       "stylelint-config-html",
+       "stylelint-config-recess-order"
+     ],
+     "overrides": [
+       {
+         "files": ["*.html", "**/*.html"],
+         "customSyntax": "postcss-html"
+       }
+     ],
+     "ignoreFiles": [
+       "dist/**/*",
+       "node_modules/**/*",
+       "**/*.js",
+       "**/*.jsx",
+       "**/*.tsx",
+       "**/*.ts",
+       "**/*.json",
+       "**/*.md",
+       "**/*.yaml"
+     ],
+     // 需要时使用配置注释来禁用特定规则
+     "reportDescriptionlessDisables": true,
+     "reportInvalidScopeDisables": true,
+     "reportNeedlessDisables": true
+   }
+   ```
+
+3. 对项目中所有的scss文件运行stylelint:
    
-   - 下面是我编辑器setting.json关于eslint的配置
-     
-     ```json
-     // eslint配置
-       "eslint.useFlatConfig": true,
-       "eslint.enable": true,
-       "eslint.run": "onType",
-       "eslint.validate": [
-         "javascript",
-         "javascriptreact",
-         "typescript",
-         "typescriptreact",
-         "vue",
-         "html",
-         "json",
-         "markdown"
+   ```shell
+   npx stylelint "**/*.scss" #检查
+   npx stylelint "**/*.scss" --fix #修复
+   ```
+
+4. 同样的，保存时自动修复需要在编辑器中安装`stylelint`扩展
+   
+   ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-18-16-04-32-image.png)
+   
+   然后在编辑器（vscode）的`setting.json`文件中加入以下配置：
+   
+   ```json
+    "editor.codeActionsOnSave": {
+       ...
+       "source.fixAll.stylelint": "explicit"
+    },
+    // 取消系统默认的检查
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
+    "stylelint.ignoreDisables": true,
+    "stylelint.validate": ["css", "scss", "less", "sass", "vue", "html"]
+   ```
+
+## 完成以上配置之后即可在编辑代码的过程中随时保证代码质量和代码格式。
+
+1. 同时可以在`package.json`中添加手动检查、修复的命令，可在终端手动执行
+   
+   ```json
+   "scripts": {
+       ...
+       "lint:eslint": "eslint . --ext .vue,.js,.ts,.tsx,.jsx --fix",
+       "lint:stylelint": "stylelint --fix \"./**/*.{html,vue,css,scss}\""
+       "lint:prettier": "prettier --write  \"./**/*.{js,ts,json,tsx,css,scss,vue,html,md}\"",,
+       ...
+     },
+   ```
+
+# 四、 添加Git Hook
+
+> 在git提交前再进行一次代码检查
+
+## 1. husky、lint-staged、@commitlint/cli
+
+1. `husky`:Husky 是一个 Git Hook 工具，可以帮助我们在 Git 事件发生时自动[运行脚本](https://so.csdn.net/so/search?q=%E8%BF%90%E8%A1%8C%E8%84%9A%E6%9C%AC&spm=1001.2101.3001.7020)。Git Hook 是一种机制，它允许在 Git 执行操作时自动运行特定脚本，以执行自定义操作。
+
+2. `lint-staged`是一个工具，可以在 Git 暂存区的文件上运行指定的 lint 工具，以便于仅在需要时执行 lint 检查。它通常与 Husky 配合使用，以在提交代码前运行 lint-staged。
+
+3. `@commitlint/cli`是一个命令行工具，用于校验 Git 提交信息是否符合规范。它通常与 Husky 和 lint-staged 配合使用，以在提交代码前对提交信息进行校验，从而确保提交信息的格式和内容符合项目规范和约定。
+
+## 2.具体使用
+
+1. 安装
+   
+   ```shell
+   pnpm add husky -D
+   pnpm add lint-staged -D
+   pnpm add @commitlint/cli @commitlint/config-conventional -D
+   ```
+
+
+
+2. 初始化`husky`
+   
+   > 这里初始化之后会在根目录添加一个`.husky`文件夹，里面有一个`pre-commit`文件和一个`_`文件夹。简单配置用不上`_`文件夹的内容且是不会提交git的，我就删掉了
+   
+   ```shell
+   pnpm exec husky init
+   ```
+
+
+
+3. 在`pre-commit`中添加以下内容，用于提交前进行代码校验
+   
+   ```shell
+   #!/usr/bin/env sh
+   
+   pnpm lint-staged
+   ```
+
+
+
+4. 手动在项目根目录添加`commitlint.config.ts`文件，用于编写提交信息的校验规则：
+   
+   ```ts
+   module.exports = {
+     ignores: [(commit) => commit.includes('init')],
+     extends: ['@commitlint/config-conventional'],
+     rules: {
+       'body-leading-blank': [2, 'always'],
+       'footer-leading-blank': [1, 'always'],
+       'header-max-length': [2, 'always', 108],
+       'subject-empty': [2, 'never'],
+       'type-empty': [2, 'never'],
+       'subject-case': [0],
+       'type-enum': [
+         2,
+         'always',
+         [
+           'feat', //新功能(feature)
+           'fix', // 修复bug
+           'perf', // 性能优化
+           'style', // 不影响代码运行的变动
+           'docs', // 文档
+           'test', // 测试(单元,集成测试)
+           'refactor', // 重构
+           'build', // 编译相关的修改，例如发布版本，对项目构建或者依赖的改动
+           'ci', // 自动化流程配置或脚本修改
+           'chore', // 构建过程或者辅助工具的变动,如增加依赖库等
+           'revert', // 撤销commit,回滚到上一个版本
+           'wip',
+           'workflow',
+           'types',
+           'release'
+         ]
+       ]
+     }
+   };
+   
+   ```
+
+
+
+5. 手动添加`commit-msg`文件
+   
+   在上一步生产的`.husky`文件夹下，创建一个和`pre-commit`同级的`commit-msg`文件，用于检验提交信息。添加以下内容：
+   
+   ```shell
+   #!/usr/bin/env sh
+   . "$(dirname -- "$0")/_/husky.sh"
+   
+   npx --no -- commitlint --edit ${1}
+   ```
+
+
+
+6. 在`package.json`中配置`lint-staged`
+   
+   ```json
+   {
+    "scripts": {
+       "commitlint": "commitlint --config commitlint.config.ts -e -V",
+       "prepare": "husky install",
+       "preinstall": "npx only-allow pnpm"
+     }, 
+    "lint-staged": {
+       "*.{js,jsx,ts,tsx}": [
+         "eslint --fix",
+         "prettier --write"
        ],
-       "eslint.codeAction.showDocumentation": {
-         "enable": false
-       },
-     ```
+       "*.json": [
+         "prettier --write"
+       ],
+       "*.vue": [
+         "eslint --fix",
+         "prettier --write",
+         "stylelint --fix"
+       ],
+       "*.{scss,less,styl,html}": [
+         "stylelint --fix",
+         "prettier --write"
+       ],
+       "*.md": [
+         "prettier --write"
+       ]
+     }
+   }
+   ```
 
 
 
-## 4. 添加style样式代码格式化扩展（css、scss、less）
+# 五、添加各种插件
+
+> 提高代码编写效率
+
+## 1. 使用文件路径别名
+
+1. 使用自定义符号代替指定路径，简化模块导入路径
+   
+   ```shell
+   pnpm add @types/node --save-dev
+   ```
+   
+   
+
+2. 进入`vite.config.ts`
+   
+   ```js
+   import path from 'path'
+   
+   export default defineConfig({
+   ......
+   resolve: {
+     alias: {
+         '@': path.resolve('./src'), // @代替src
+         '@c': path.resolve('./src/components') // @c代替./src/components
+         // 可根据后续开发情况自行添加
+         },
+     },
+   })
+   ```
