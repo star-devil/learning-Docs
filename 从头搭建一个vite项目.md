@@ -690,3 +690,30 @@ export default defineConfig({
    ```
 
 3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
+
+## 4.css相关配置
+
+1. 添加全局样式变量
+   
+   > 定义一些全局的主题样式变量，统一各页面样式时十分有用
+   
+   ```ts
+   // vite.config.ts
+   export default defineConfig({
+       // ...其他配置
+       css: {
+           preprocessorOptions: {
+               scss: {
+                   // ...其他配置
+                   // 添加额外的代码变量，可以全局引用。如果在这里添加了样式，那么样式在最终编译会重复生成
+                   additionalData: "$color: red'",
+                   // 变量名可以直接替换为文件导入，比如:
+                   // additionalData: @import '@/styles/theme.scss';
+               }
+           }    
+       },
+       // ..其他配置
+   })
+   ```
+   
+   
