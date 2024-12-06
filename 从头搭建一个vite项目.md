@@ -30,10 +30,14 @@ pnpm create vite my-vue-app --template vue-ts
 
 # 二、 安装sass
 
+> 安装的`sass`，项目开发使用的是`scss`语法，因为scss和css语法书写方式类似
+> 
 > `sass`基于`Ruby`语言开发而成，因此 [安装](https://www.sass.hk/install/#)`sass`前需要[安装Ruby](http://rubyinstaller.org/downloads)。（注:mac下自带Ruby无需在安装Ruby!window请参考[官网教程]([安装Sass | Sass中文网](https://www.sass.hk/install/))）
+> 
+> scss是sass3引入的新语法，其实是一个东西，平时都称之为sass，[二者的区别]([Sass和Scss的区别这是我参与11月更文挑战的第19天，活动详情查看：2021最后一次更文挑战 题目 给你二叉树的根 - 掘金](https://juejin.cn/post/7033331497054519327))
 
 ```shell
-## 在项目中安装scss
+## 安装
 pnpm add sass-embedded -D
 ## sass-embedded:该包是sass包的替代品。
 ## 它支持与sass相同的 JS API，并由同一团队维护，但sass包是纯 JavaScript
@@ -61,8 +65,6 @@ export default defineConfig({
     // ..其他配置
 })
 ```
-
-
 
 # 三、配置代码检查和格式化
 
@@ -368,7 +370,7 @@ export default defineConfig({
    ```shell
    pnpm add -D stylelint # 当前是V16.0.0
    pnpm add -D stylelint-config-standard-scss # 扩展stylelint-config-standard 和 stylelint-config-recommended-scss 共享配置
-   pnpm add -D postcss-html # 用于解析 HTML（和类 HTML）的 PostCSS语法，下面两个扩展会依赖这个插件
+   pnpm add -D postcss-html # 用于解析 HTML（和类 HTML<style>）的 PostCSS语法，下面两个扩展会依赖这个插件（vite已经内置postcss，无需再单独下载）
    pnpm add -D stylelint-config-standard-vue # 提供 Vue 的相关规则
    pnpm add -D stylelint-config-html # 提供 Html 的相关规则
    
@@ -691,9 +693,9 @@ export default defineConfig({
 
 3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
 
-## 4.css相关配置
+## 4. css相关配置
 
-1. 添加全局样式变量
+### 1. 添加全局样式变量
    
    > 定义一些全局的主题样式变量，统一各页面样式时十分有用
    
@@ -715,5 +717,207 @@ export default defineConfig({
        // ..其他配置
    })
    ```
+
+### 2. 自动填加浏览器前缀
    
+   > 可以避免手动处理浏览器兼容问题，专注在样式开发工作上
    
+   2.1. 安装`autoprefixer` ：autoprefixer是添加前缀（vite已经内置postcss，无需再单独下载）
+   
+   ```ts
+   pnpm add autoprefixer -D
+   ```
+   
+   2.2. 在`vite.config.ts`中配置
+   
+   ```ts
+   // vite.config.ts
+   import autoprefixer from 'autoprefixer';
+   export default defineConfig({
+       // ...其他配置
+       css: {
+        // ..其他配置
+           postcss: {
+               plugins: [
+                   autoprefixer({
+                     overrideBrowserslist: [
+                       'Android 4.1',
+                       'iOS 7.1',
+                       'Chrome > 31',
+                       'ff > 31',
+                       'ie >= 8'
+                     ],
+                    grid: true
+                  })
+              ]
+           }
+       },
+       // ..其他配置
+   })
+   ```
+
+### 3. 将类名处理成哈希（可选）
+
+> 可以避免类名重复导致全局样式冲突，vue的`scoped`也能一定程度上解决这个问题。简单项目建议直接使用`scoped`，复杂样式管理可以使用 [CSS modules 文件](https://github.com/css-modules/css-modules)或者通过[postcss-modules](https://github.com/css-modules/postcss-modules)自定义将类名处理成哈希值。
+> 
+> `CSS modules`也是基于`postcss-modules`实现的，配置 CSS modules 的行为，选项将被传递给`postcss-modules` 。任何以 `.module.scss` 为后缀名的文件都被认为是一个导入`CSS Module`这样的文件会返回一个相应的模块对象
+> 
+
+下面简单写一下`CSS Module`的使用，`postcss-modules`可以自行了解，也差不多。
+
+   ```vue
+   // 示例
+   <template>
+       <p :class="style.example">This is Example</p>
+   </template>
+   
+   <script setup lang="ts">
+   import { useCssModule } from 'vue';
+   
+   const style = useCssModule();
+   </script>
+   
+   <style module lang="scss">
+   /** 也可以把样式写在以 `.module.scss` 为后缀名的文件中再导入使用 **/
+   // @import '**/**.module.scss';
+   
+   .example {
+       text-decoration: dashed;
+       display: flex;
+       flex-flow: row nowrap;
+       justify-content: center;
+   }
+   </style>
+   ```
+
+可以在`vite.config.ts`中配置生成规则：
+
+```ts
+	// vite.config.ts
+	export default defineConfig({
+	    // ...其他配置
+	    css: {
+	     // ..其他配置
+	        modules: {
+	            generateScopedName: '[name]__[local]___[hash:base64:5]'
+	        }
+	    },
+	    // ..其他配置
+	})
+	```
+
+### 4. 将px转rem（可选）
+
+> 在自适应不同屏幕时会发挥作用，尤其是在还原ui设计图时。如果你在项目中使用了UI框架，请确认框架组件是否支持`pxtorem`
+
+4.1 下载`postcss-pxtorem`插件
+	
+```shell
+pnpm add ppostcss-pxtorem -D
+```
+
+4.2 `vite.config.ts`中配置
+	
+```ts
+// vite.config.ts
+// @ts-expect-error postcss-pxtorem还没有官方的ts包
+import pxtorem from 'postcss-pxtorem';
+   
+export default defineConfig({
+    // ...其他配置
+    css: {
+    // ..其他配置
+        postcss: {
+            plugins: [
+                pxtorem({
+	                // 1rem = 14px
+					rootValue: 14,
+						// 需要转换的属性，除 border 外所有px 转 rem
+					propList: ['*', '!border'], 
+					// 排除node_modules
+					exclude: '*/node_modules/*', 
+					// 是否要在媒体查询中转换px
+					mediaQuery: false, 
+						 // 设置要转换的最小像素值
+					minPixelValue: 2
+				})
+            ]
+        }
+    },
+       // ..其他配置
+})
+```
+
+4.3 添加 remUnit 适配代码
+	
+```ts
+// remUnit.ts
+function setRem(): void {
+	const designWidth: number = 1920 // 设计稿宽度
+	const html: HTMLElement = document.documentElement
+	const width: number = html.clientWidth
+	  
+	html.style.fontSize = `${(width / designWidth * 14)}px`
+}
+	
+// 初始化和窗口变化时调用
+setRem()
+window.addEventListener('resize', setRem)
+	
+export default setRem
+```
+
+```ts
+// 这里用gpt将上面的代码改写成了一段更严谨的代码，随便用哪个都可以
+// remUnit.ts
+class RemAdapter {
+	private designWidth: number
+	private rootValue: number
+	
+	constructor(designWidth: number = 1920, rootValue: number = 14) {
+	    this.designWidth = designWidth
+	    this.rootValue = rootValue
+	    this.init()
+	}
+	
+	private calculateRem(): void {
+	    const html: HTMLElement = document.documentElement
+	    const width: number = html.clientWidth
+	    
+	    html.style.fontSize = `${(width / this.designWidth * this.rootValue)}px`
+	}
+	
+	private init(): void {
+	    this.calculateRem()
+	    window.addEventListener('resize', this.calculateRem.bind(this))
+	  }
+}
+	
+// 创建实例
+new RemAdapter()
+	
+export default RemAdapter
+```
+
+4.4 在 `main.ts` 中引入：
+```ts
+import './remUnit'
+```
+
+
+5. `tailwindcss`（可选）
+
+
+
+
+
+## 5. 图片处理
+
+1. 图片无损压缩
+
+
+2. 雪碧图优化
+
+
+
+3. 以组件的形式加载Svg
