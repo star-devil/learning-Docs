@@ -708,7 +708,7 @@ export default defineConfig({
                scss: {
                    // ...其他配置
                    // 添加额外的代码变量，可以全局引用。如果在这里添加了样式，那么样式在最终编译会重复生成
-                   additionalData: "$color: red'",
+                   additionalData: "$color: red;",
                    // 变量名可以直接替换为文件导入，比如:
                    // additionalData: @import '@/styles/theme.scss';
                }
@@ -835,7 +835,7 @@ export default defineConfig({
 						// 需要转换的属性，除 border 外所有px 转 rem
 					propList: ['*', '!border'], 
 					// 排除node_modules
-					exclude: '*/node_modules/*', 
+					exclude: '/node_modules/*', 
 					// 是否要在媒体查询中转换px
 					mediaQuery: false, 
 						 // 设置要转换的最小像素值
@@ -906,10 +906,67 @@ import './remUnit'
 
 
 5. `tailwindcss`（可选）
+	> 可以当做postcss的插件使用
+	
+5.1 下载和初始化
 
+ ```shell
+	pnpm add -D tailwindcss
+	// 下载完成后初始化
+	npx tailwindcss init
+```
 
+5.2 修改配置文件
 
+```js
+// `tailwind.config.ts`
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+	"./index.html",
+	"./src/**/*.{vue,js,ts,jsx,tsx}"
+  ],
+  theme: {
+	extend: {},
+  },
+  plugins: [],
+}
 
+// vite.config.ts
+import tailwindcss from 'tailwindcss';
+export default defineConfig({
+    // ...其他配置
+    css: {
+    // ..其他配置
+        postcss: {
+            plugins: [
+		        // ...其他配置
+                tailwindcss()
+            ]
+        }
+    },
+       // ..其他配置
+})
+```
+
+5.3 添加 Tailwind 的基础指令，并在main.ts中引入
+
+```css
+/* src/tailwind.css */*
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```ts
+// main.ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import './tailwind.css'; // 包含 Tailwind 指令的 CSS 文件 
+import './style.scss'
+
+createApp(App).mount('#app')
+```
 
 ## 5. 图片处理
 
