@@ -579,7 +579,7 @@ export default defineConfig({
 
 ## 1. 使用文件路径别名
 
-1. 使用自定义符号代替指定路径，简化模块导入路径
+1. 使用自定义符号代替指定路径，简化模块导入路径。
    
    ```shell
    pnpm add @types/node --save-dev
@@ -593,9 +593,11 @@ export default defineConfig({
    export default defineConfig({
    ......
    resolve: {
+	// alias 别名配置不仅在 JavaScript 的 import 语句中生效，在 CSS 代码的 `@import` 和 `url`导入语句中也同样生效。
      alias: {
-         '@': path.resolve('./src'), // @代替src
-         '@c': path.resolve('./src/components') // @c代替./src/components
+         '@': path.resolve(__dirname, 'src'), // @代替src
+         '@c': path.resolve(__dirname, 'src/components'),
+         '@assets': path.resolve(__dirname, 'src/assets')
          // 可根据后续开发情况自行添加
          },
      },
@@ -905,8 +907,9 @@ import './remUnit'
 ```
 
 
-5. `tailwindcss`（可选）
-	> 可以当做postcss的插件使用
+### 5.`tailwindcss`（可选）
+
+> 可以当做postcss的插件使用
 	
 5.1 下载和初始化
 
@@ -968,13 +971,188 @@ import './style.scss'
 createApp(App).mount('#app')
 ```
 
-## 5. 图片处理
-
-1. 图片无损压缩
 
 
-2. 雪碧图优化
+## 5. 静态资源处理
+
+> 静态资源本身并不是标准意义上的模块，因此对它们的处理和普通的代码是需要区别对待的。一方面我们需要解决**资源加载**的问题，对 Vite 来说就是如何将静态资源解析并加载为一个 ES 模块的问题；另一方面在**生产环境**下我们还需要考虑静态资源的部署问题、体积问题、网络性能问题，并采取相应的方案来进行优化。
+
+### 1. 图片无损压缩
+
+>	图片资源的体积往往是项目产物体积的大头，如果能尽可能精简图片的体积，那么对项目整体打包产物体积的优化将会是非常明显的
+
+1.1 安装
+```shell
+pnpm add vite-plugin-imagemin -D
+```
+
+1.2 `vite.config.ts`中配置
+```ts
+import viteImagemin from 'vite-plugin-imagemin';
+
+export defaul defineConfig({
+	plugins:[
+		// 其他配置
+		viteImagemin({
+			// 是否在控制台输出压缩结果
+			verbose: false, 
+			// 无损压缩配置，无损压缩下图片质量不会变差
+			optipng: {
+				// 优化级别：
+				optimizationLevel: 7
+			},
+			gifsicle: {
+				optimizationLevel: 7,
+				interlaced: false
+			},
+			mozjpeg: {
+				// 压缩质量，范围为`0` （最差）到`100` （完美）。
+		        quality: 20,
+	        },
+			pngquant: {
+				quality: [0.8, 0.9],
+				speed: 4,
+			},
+			// svg 优化
+			svgo: {
+				plugins: [
+					{
+						// 删除与文档宽度和高度匹配的[`viewBox`]
+						name: 'removeViewBox'
+					},
+					{
+						// 从文档中的元素中删除空属性
+						name: 'removeEmptyAttrs',
+						active: false
+					}
+				]
+			}
+		})
+	]
+})
+
+```
 
 
+### 2. 以组件的形式加载Svg
 
-3. 以组件的形式加载Svg
+>	svg可以作为静态图片加载，但是如果作为一个组件引用的话，可以很方便的修改svg的各种属性，且比img标签等引入方式更加优雅（如果你想在项目中使用雪碧图优化svg，可以先跳过这一小节）
+
+2.1 安装
+```shell
+pnpm add vite-svg-loader -D
+```
+
+2.2 在`vite.config.ts`中配置
+```ts
+import svgLoader from 'vite-svg-loader'
+
+export default defineConfig({
+  plugins: [
+	  // 其他配置
+	  svgLoader()
+  ]
+})
+```
+
+2.3 使用
+
+	这个插件提供几种显示导入：url、raw、component
+	 import svg from './my-icon.svg?url'
+	 import svg from './my-icon.svg?raw'
+	  import svg from './my-icon.svg?component'
+	1. `url`: 可以使用`?url`后缀将 SVG 作为 URL 导入
+	2. `raw`: 可以使用`?url`后缀将 SVG 作为 字符串 导入
+	3. `component`: 可以使用`?url`后缀将 SVG 作为 vue组件 导入
+	当为提供显示参数时，SVG 将默认作为 Vue 组件导入。可以使用`defaultImport`配置设置来更改此设置，具体设置可参考官方说明
+
+### 3. 动态引入静态资源
+
+>	在前面，我们已经为`./src/assets`路径下的静态资源设置了别名，在加载图片时就不用手动寻址。比如：`<img src="@assets/images/code-icon.png" />`。
+>	但是在使用动态路径访问`assets`资源时会导致打包后路径错误，找不到图片文件。所以我这里在`src/utils/tools.ts`中添加了一个`getAssetsFile`方法，用于使用动态路径获取`assets`下的静态资源，代码如下：
+
+```ts
+/**
+* @description 获取assets静态资源路径，在使用动态路径时很有用
+* */
+
+export const getAssetsFile = (url: string) => {
+	return new URL(`../assets/${url}`, import.meta.url).href;
+};
+```
+
+### 4.  雪碧图优化（可选）
+>	svg 文件一般体积不大，但 Vite 中对于 svg 文件会始终打包成单文件，当项目中使用了较多的svg图标时，会导致网络请求增加，大量的 HTTP 请求会导致网络解析耗时变长，页面加载性能直接受到影响。（不过这个问题只在http1.1中受影响，因为http2的多路复用设计可以解决大量http请求导致的网络加载性能问题。如果项目依旧使用的是http1.1并且存在较多svg，建议使用雪碧图技术进行优化）
+
+4.1 安装
+```shell
+pnpm add -D @spiriit/vite-plugin-svg-spritemap
+```
+
+4.2 在`vite.config.ts`中配置
+```ts
+// vite.config.js / vite.config.ts
+import VitePluginSvgSpritemap from '@spiriit/vite-plugin-svg-spritemap'
+
+export default {
+  plugins: [VitePluginSvgSpritemap('./src/icons/*.svg', {
+	prefix: 'sprites_icon-', // 前缀
+	output: {
+		view: true,
+		use: true
+	}
+	})]
+}
+```
+
+4.3 使用
+
+>	这个插件也支持把svg导入为vue组件使用，如果项目中需要雪碧图优化，那么上面第2点提到的`以组件的形式加载Svg`的插件就不用下了，用这一个插件就可以了。下面讲一下使用方法(推荐使用这种)。
+
+```vue
+// 该插件支持两种显示引入后缀用于转化组件，也可以不适用后缀，但样式会不太一样：
+<script setup lang="ts">
+import ViteView from '@assets/icons/vite.svg?view'; // 转化为vue组件,适配大小
+import ViteUse from '@assets/icons/vite.svg?use'; // 直接使用，原始大小
+</script>
+
+<template>
+	<ViteView />
+	<ViteUse />
+</template>
+```
+
+4.4 解决import无法找到模块的报错
+```
+官方给的解决方案是在 vite-env.d.ts中添加下面这句代码，如果你添加了之后import语句还在报错，请重启编辑器
+
+/// <reference types="@spiriit/vite-plugin-svg-spritemap/client" />
+```
+### 5. 单文件 or 内联？
+
+[参考网址](https://cloud.tencent.com/developer/article/2360595)
+
+在 Vite 中，所有的静态资源都有两种构建方式，一种是打包成一个单文件，另一种是通过 base64 编码的格式内嵌到代码中。
+
+这两种方案到底应该如何来选择呢？
+
+对于比较小的资源，适合内联到代码中，一方面对`代码体积`的影响很小，另一方面可以减少不必要的网络请求，`优化网络性能`。而对于比较大的资源，就推荐单独打包成一个文件，而不是内联了，否则可能导致上 MB 的 base64 字符串内嵌到代码中，导致代码体积瞬间庞大，页面加载性能直线下降。
+
+Vite 中内置的优化方案是下面这样的:
+
+- 如果静态资源体积 >= 4KB，则提取成单独的文件
+- 如果静态资源体积 < 4KB，则作为 base64 格式的字符串内联
+
+上述的`4 KB`即为提取成单文件的临界值，当然，这个临界值你可以通过`build.assetsInlineLimit`自行配置，如下代码所示:
+
+```typescript
+// vite.config.ts
+{
+  build: {
+    // 8 KB
+    assetsInlineLimit: 8 * 1024
+  }
+}
+```
+
+> svg 格式的文件不受这个临时值的影响，始终会打包成单独的文件，因为它和普通格式的图片不一样，需要动态设置一些属性，所以采用了上面的一些优化措施
