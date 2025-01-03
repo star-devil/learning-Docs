@@ -815,7 +815,7 @@ export default defineConfig({
 4.1 下载`postcss-pxtorem`插件
 	
 ```shell
-pnpm add ppostcss-pxtorem -D
+pnpm add postcss-pxtorem -D
 ```
 
 4.2 `vite.config.ts`中配置
