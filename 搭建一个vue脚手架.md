@@ -162,7 +162,7 @@ export default defineConfig({
      <img src="file:///Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-49-19-image.png" title="" alt="" data-align="center">
    
    - 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-48-36-image.png)
+     ![格式化快捷键](images/格式化快捷键.png)
    
    - 如果你的项目中有`.editorconfig` ，Prettier 会对其进行解析，并将其属性转换为对应的 Prettier 配置。此配置会被 `.prettierrc` 等覆盖。
    
@@ -179,7 +179,7 @@ export default defineConfig({
    如需要从旧版本升级，请前往官网查看迁移方法。另外，ESlint9.0支持的Node.js版本是LTSv18.18.0+和v20，不支持v19以及之前的所有版本。
    
    ```
-   pnpm create @eslint/config@latest`
+   pnpm create @eslint/config@latest
    
        ## 根据提示选择适合你项目的选项:
    
@@ -327,15 +327,15 @@ export default defineConfig({
    
    - 安装插件`eslint`扩展插件
      
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-30-26-image.png)
+     ![ eslint插件](images/eslint插件.png)
    
    - 勾选开启使用插件
      
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-31-44-image.png)
+     ![启用插件](images/启用插件.png)
    
    - 勾选开启扁平模式（打开设置搜索use flat config）
      
-     ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-14-14-34-14-image.png)
+     ![开启扁平模式](images/启用扁平模式.png)
    
    - 下面是我编辑器setting.json关于eslint的配置
    
@@ -422,7 +422,7 @@ export default defineConfig({
 
 4. 同样的，保存时自动修复需要在编辑器中安装`stylelint`扩展
    
-   ![](/Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-18-16-04-32-image.png)
+   ![stylelint插件](images/stylelint插件.png)
    
    然后在编辑器（vscode）的`setting.json`文件中加入以下配置：
    
