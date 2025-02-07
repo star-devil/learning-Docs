@@ -158,9 +158,9 @@ export default defineConfig({
      ```
    
    - 如果想开启使用键盘快捷键格式化当前文件，或者当前选中代码，需要下载一个插件（VScode）：`Formatting Toggle`，下载好之后启用插件。
-     
+	  ![Formatting Toggle](images/Formatting_Toggle.png)
      <img src="file:///Users/wangqiaoling/Library/Application%20Support/marktext/images/2024-11-06-10-49-19-image.png" title="" alt="" data-align="center">
-   
+
    - 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
      ![格式化快捷键](images/格式化快捷键.png)
    
@@ -227,7 +227,7 @@ export default defineConfig({
    pnpm add -D eslint-config-prettier #禁用所有与格式相关的 eslint 规则，解决 prettier 与 eslint 规则冲突，确保将其放在 extends 队列最后，这样它将覆盖其他配置
    
    ## eslint的其他规范化插件
-   pnpm add -D eslint-plugin-markdown
+   pnpm add -D @eslint/markdown
    ```
 
 3. 在`eslint.config.js`中添加一些基础的校验规则，新版本配置文件同时还弃用了`.eslintignore`文件
@@ -239,7 +239,7 @@ export default defineConfig({
    import pluginVue from 'eslint-plugin-vue';
    import prettierPlugin from 'eslint-plugin-prettier';
    import eslintConfigPrettier from 'eslint-config-prettier';
-   import markdown from "eslint-plugin-markdown";
+   import markdown from "@eslint/markdown";
    
    export default [
      { files: ['**/*.{js,mjs,cjs,ts,vue}']},
@@ -448,7 +448,7 @@ export default defineConfig({
        ...
        "lint:eslint": "eslint . --ext .vue,.js,.ts,.tsx,.jsx --fix",
        "lint:stylelint": "stylelint --fix \"./**/*.{html,vue,css,scss}\""
-       "lint:prettier": "prettier --write  \"./**/*.{js,ts,json,tsx,css,scss,vue,html,md}\"",,
+       "lint:prettier": "prettier --write  \"./**/*.{js,ts,json,tsx,css,scss,vue,html,md}\"",
        ...
      },
    ```
