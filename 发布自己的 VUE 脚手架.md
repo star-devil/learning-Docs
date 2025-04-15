@@ -75,7 +75,7 @@ console.log('hello vvt')
 ...主内容
 ```
 
-`#!`开头标识这个文件被当做执行文件，可以当做脚本运行。后面的`/usr/bin/env node表示文件用node执行，基于用户安装根目录下的环境变量中查找node
+`#!`开头标识这个文件被当做执行文件，可以当做脚本运行。后面的`/usr/bin/env node`表示文件用node执行，基于用户安装根目录下的环境变量中查找node
 
 ### 3. 修改` package.json`
 
@@ -438,7 +438,7 @@ graph TD
 
    - 要为令牌提供到期时间，请选择“到期时间”，然后选择默认选项或单击“自定义”以输入日期 。
 
-   - 选择要授予此令牌的作用域。发布 packages 包必须要要选择**`write:packages`**、**`read:packages`**、**`delete:packages`**
+   - 选择要授予此令牌的作用域。发布 packages 包必须要要选择`write:packages`、`read:packages`、`delete:packages`
 
    - 单击“生成令牌”。
 
