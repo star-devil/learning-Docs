@@ -305,7 +305,7 @@ pnpm create vite your-package-name --template vue-ts
   [![npm downloads](https://img.shields.io/npm/dm/<package-name>.svg)](https://www.npmjs.com/package/<package-name>)
   ```
 
-  ![标签显示示例图](images/标签显示示例图.png)
+  ![标签显示示例图](标签显示示例图.png)
 
   > 如果想在 readme中放一些说明图片，本地地址（相对和绝对的都有点问题）在发布之后是无法预览的，需要将图片转为在线地址再填写到 md 文件中。这里提供一个简单的方法：
   >
@@ -346,7 +346,7 @@ pnpm create vite your-package-name --template vue-ts
 
   `/Users/egg/.nvm/versions/node/v22.12.0/lib`这个地址可以通过查看创建的全局链接（下面有写）得到:
 
-  ![文件地址](images/文件地址.png)
+  ![文件地址](文件地址.png)
 
 - 其他相关命令
 
