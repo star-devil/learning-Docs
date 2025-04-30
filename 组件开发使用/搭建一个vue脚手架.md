@@ -205,11 +205,11 @@ export default defineConfig({
      ```
 
    - 如果想开启使用键盘快捷键格式化当前文件，或者当前选中代码，需要下载一个插件（VScode）：`Formatting Toggle`，下载好之后启用插件。
-     ![Formatting Toggle](Formatting_Toggle.png)
+     ![Formatting Toggle](../images/cli/Formatting_Toggle.png)
 
 
    - 官方文档格式化快捷键是 (`CMD + SHIFT + P`/`OPT + SHIFT + P`)，如果没有生效，你就需要检查一下你自己的编辑器格式化代码的快捷键是怎么定义的，检查方法：通过快捷键`Ctrl + K, Ctrl + S`或`Cmd + K, Cmd + S`打开键盘快捷键设置，搜索格式或者format，可以看到我的格式化快捷键是：`SHIFT + CMD + F`
-     ![格式化快捷键](格式化快捷键.png)
+     ![格式化快捷键](../images/cli/格式化快捷键.png)
 
      
 
@@ -410,15 +410,15 @@ export default defineConfig({
 
    - 安装插件`eslint`扩展插件
      
-     ![ eslint插件](eslint插件.png)
+     ![ eslint插件](../images/cli/eslint插件.png)
 
    - 勾选开启使用插件
      
-     ![启用插件](启用插件.png)
+     ![启用插件](../images/cli/启用插件.png)
 
    - 勾选开启扁平模式（打开设置搜索use flat config）
      
-     ![开启扁平模式](启用扁平模式.png)
+     ![开启扁平模式](../images/cli/启用扁平模式.png)
 
    - 下面是我编辑器setting.json关于eslint的配置
 
@@ -507,7 +507,7 @@ export default defineConfig({
 
 4. 同样的，保存时自动修复需要在编辑器中安装`stylelint`扩展
    
-   ![stylelint插件](stylelint插件.png)
+   ![stylelint插件](../images/cli/stylelint插件.png)
    
    然后在编辑器（vscode）的`setting.json`文件中加入以下配置：
    
