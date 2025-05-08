@@ -27,7 +27,7 @@ pnpm add @heimdallr-sdk/node     # Node.js服务端
 ### 2. 配置本地服务和数据库
 > 远端数据库直接连接上报接口即可，不赘述
 
-#### 1. 下载与安装
+#### 2.1. 下载与安装
 - **Windows**(具体步骤请查阅相关文档)
     >  1. 访问 [MySQL 官方下载页](https://dev.mysql.com/downloads/mysql/)，选择 **MySQL Community Server**
     >  2. 运行安装程序，选择 **Developer Default** 配置
@@ -48,7 +48,7 @@ pnpm add @heimdallr-sdk/node     # Node.js服务端
     sudo systemctl start mysql
 	```
 
-#### 2. 初始化
+#### 2.2. 初始化
 1. **登录数据库**
 ```bash
 mysql -u root -p
@@ -93,7 +93,7 @@ npm i @heimdallr-sdk/cli -g
 3.  执行成功后访问给出的本地服务：`localhost:7001`，如下图：
 	![serverApi](../images/heimdallrSdk/serverApi.png)
 
-#### 3. 安装图形化工具`sequel ace`
+#### 2.3. 安装图形化工具`sequel ace`
 - appstore、github、brew都可以安装
 ### 3. SDK 配置与初始化
 
@@ -201,8 +201,7 @@ export default defineConfig({
 VITE_API_URL='http://localhost:7001/'
 ```
 
-
-#### 3. 使用其他插件
+### 3. 使用其他插件
 
 > 这里使用`@heimdallr-sdk/record`作为示例。这个插件是用来做录屏回放功能的。录屏依赖了rrweb播放器插件，可以去官网学习一下：https://github.com/rrweb-io/rrweb/blob/master/guide.zh_CN.md
 > 
@@ -257,3 +256,8 @@ export default defineConfig({
 });
 ```
 
+### 4. 配置好后的页面展示
+
+> 可以在`localhost:3000`看到监控项目情况：
+
+![client](../images/heimdallrSdk/client.png)
