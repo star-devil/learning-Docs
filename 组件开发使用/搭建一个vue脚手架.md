@@ -6,7 +6,7 @@
 
 ::: tip 请注意 node版本
 
-Vite 需要 [Node.js](https://nodejs.org/en/) 版本 18+ 或 20+。然而，有些模板需要依赖更高的 Node 版本才能正常运行，当你的包管理器发出警告时，请注意升级你的 Node 版本。
+需要 [Node.js](https://nodejs.org/en/)  20+。然而，有些模板需要依赖更高的 Node 版本才能正常运行，当你的包管理器发出警告时，请注意升级你的 Node 版本。
 
 :::
 
@@ -782,5 +782,133 @@ export default defineConfig({
 
 3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
 
-### 4. 其他可选配置可以参考下一篇文章【为脚手架集成额外功能】
+### 4. 打包使用 gzip 压缩 
+
+> 打包压缩使用了`vite-plugin-compression2` 这个 Vite 插件，用于在构建阶段自动压缩生成的文件。它能够生成 `.gz`（gzip）或 `.br`（Brotli）压缩文件，以减少静态资源的文件大小，从而提高网站的加载速度和性能，尤其是首屏加载的效率
+>
+> `vite-plugin-compression2`就是`vite-plugin-compression`的升级版本，具有更轻量级的依赖和更优的性能，某些 API较 1.x有变化，具体变化可以查阅官方说明
+>
+> 官方地址：https://github.com/nonzzz/vite-plugin-compression
+
+1. 安装
+
+   ```shell
+   $ yarn add vite-plugin-compression2 -D
+   # or
+   $ npm install vite-plugin-compression2 -D
+   # or
+   $ pnpm add vite-plugin-compression2 -D
+   ```
+
+2. `vite.config.ts`中配置压缩类型和参数，这里只使用了gzip。
+
+   ```ts
+   export default defineConfig({
+     plugins: [
+       // 都是用默认值的话可以直接写为compression()
+       compression({
+          algorithms: ['gzip', defineAlgorithm('deflate', { level: 9 })], //这里只使用了gzip这一种压缩
+          threshold: 1024, // 体积大于1KB才会被压缩
+          // include: []
+          // exclude: [], // 默认压缩html|xml|css|json|js|mjs|svg|yaml|yml|toml后缀文件，include=[填写压缩的文件], exclude=[填写不压缩的文件]
+          deleteOriginalAssets: false  // 压缩后是否删除原始文件
+       })
+     ]
+   })
+   // 一般不压缩视频文件和字体文件
+   /** 如果视频文件使用<video>标签，页面会无法加载视频：因为1. 当浏览器加载<video>标签的视频文件时，要求 identity 编码（即不压缩），使用 Range 请求来支持视频控制（拖拽、快进、暂停）功能。2. 避免双重压缩：MP4本身已经是高度压缩的格式 3.性能考虑：避免服务器端解压缩的开销 **/
+   ```
+
+3. `vite.config.ts`中配置打包文件分类输出
+
+   ```ts
+   export default defineConfig({
+     build: {
+       target: ['esnext'],
+       outDir: 'dist',
+       sourcemap: false,
+       chunkSizeWarningLimit: 4000,
+       rollupOptions: {
+         input: {
+           index: pathResolve('../../index.html', import.meta.url)
+         },
+         // 配置打包文件分类输出
+         output: {
+           chunkFileNames: 'static/js/[name]-[hash].js',
+           entryFileNames: 'static/js/[name]-[hash].js',
+           // ⚠️ 注意：如果一些资源在打包后无法找到文件（浏览器无法正确处理），那么需要在这里取消 hash 命名，使文件保持原名
+           assetFileNames: 'static/[ext]/[name]-[hash].[ext]',
+           // 将 node_modules 中的依赖打包到单独的 chunk 中
+           manualChunks: (id: string) => {
+             if (id.includes('node_modules')) {
+               return 'vendor';
+             }
+           }
+         }
+       }
+     }
+   })
+   ```
+
+   
+
+4. 必须修改`nginx`服务的压缩配置，否则项目无法加载压缩包
+
+   ```shell
+   server {
+      # ...其他配置
+   
+       # 设置项目中文件对应正确的 MIME 类型（server级别）
+       types {
+           text/html                             html htm;
+           text/css                              css;
+           application/javascript                js;
+           application/json                      json;
+           text/xml                              xml;
+           image/svg+xml                         svg;
+           image/x-icon                          ico;
+           image/png                             png;
+           image/jpeg                            jpg jpeg;
+           video/mp4                             mp4;
+           video/webm                            webm;
+           video/ogg                             ogg;
+       }
+   
+       # gzip压缩配置
+       gzip on;
+       gzip_static on;  # 优先使用预压缩文件（.gz）
+       gzip_vary on;
+       gzip_types 
+           text/plain 
+           text/css 
+           application/json 
+           application/javascript 
+           text/xml 
+           application/xml 
+           image/svg+xml;
+       gzip_min_length 1024;
+       gzip_comp_level 6;
+       gzip_buffers 16 8k;
+   
+       # 请自行添加代理配置
+   
+       # 主应用路由 - 放在最后，作为默认fallback
+       location / {
+           # SPA应用的智能回退：原始文件 -> gzip文件 -> 目录 -> index.html
+           try_files $uri $uri.gz $uri/ /index.html;
+           
+           # 其他配置
+       }
+   
+       # 全局错误页面配置
+       error_page 404 /index.html;
+       error_page 500 502 503 504 /index.html;
+   }
+   ```
+
+   
+
+   
+
+### 其他可选配置可以参考下一篇文章【为脚手架集成额外功能】
 
