@@ -402,11 +402,7 @@ export default defineConfig({
 
 6. 通过编辑器运行`eslint`
 
-   
-
    执行上述命令后，如果代码不符合规则约定的话，会发现终端会输出错误。但是编辑器并没有出现预期的红色波浪线提示，或者保存时自动修复错误。如果每次都需要执行命令才能检测那么效率也太低了，所以需要和`prettier`一样在编辑器中运行`eslint`
-
-   
 
    - 安装插件`eslint`扩展插件
      
@@ -421,7 +417,7 @@ export default defineConfig({
      ![开启扁平模式](../images/cli/启用扁平模式.png)
 
    - 下面是我编辑器setting.json关于eslint的配置
-
+   
    ```json
    // eslint配置
     "eslint.useFlatConfig": true,
@@ -530,14 +526,17 @@ export default defineConfig({
 
    ```json
    "scripts": {
-     ...
-     "lint:eslint": "eslint . --ext .vue,.js,.ts,.tsx,.jsx --fix",
-     "lint:stylelint": "stylelint --fix \"./**/*.{html,vue,css,scss}\""
-     "lint:prettier": "prettier --write  \"./**/*.{js,ts,json,tsx,css,scss,vue,html,md}\"",
+     // 其他配置...,
+     "lint:eslint": "eslint --cache --max-warnings 0  \"{src,viteConfig,lib}/**/*.{vue,js,jsx,ts,tsx}\" --fix",
+     "lint:stylelint": "stylelint --cache --fix \"**/*.{html,vue,css,scss}\" --cache-location node_modules/.cache/stylelint/",
+     "lint:prettier": "prettier --write  \"src/**/*.{js,ts,json,tsx,css,scss,vue,html,md}\",
      ...
    },
+   // --cache 启用缓存，只检查修改过的文件
+   // --max-warnings 0 将警告（warnings）视为错误
+   // --cache-location 指定缓存文件存储位置
    ```
-
+   
    
 
 ## 四、 添加Git Hook
@@ -660,129 +659,92 @@ export default defineConfig({
    }
    ```
 
-## 五、添加其他插件/配置
 
-> 提高代码编写效率
 
-### 1. 使用文件路径别名
+## 五、打包配置
 
-1. 使用自定义符号代替指定路径，简化模块导入路径。
-   
+### 1. 清理旧构建产物
+
+> rimraf 是一个 Node.js 模块，能够更加可靠的递归删除文件和目录，适合用于删除构建目录或临时文件夹等。主要用于在构建前清理 `dist` 目录，确保每次构建都是全新的输出，避免新旧文件混合导致的问题。
+
+1. 安装`rimraf`
+
    ```shell
-   pnpm add @types/node --save-dev
+   pnpm add rimraf -D
    ```
 
-2. 进入`vite.config.ts`
-   
-   ```js
-   import path from 'path'
-   
-   export default defineConfig({
-   ......
-   resolve: {
-	// alias 别名配置不仅在 JavaScript 的 import 语句中生效，在 CSS 代码的 `@import` 和 `url`导入语句中也同样生效。
-     alias: {
-         '@': path.resolve(__dirname, 'src'), // @代替src
-         '@c': path.resolve(__dirname, 'src/components'),
-         '@assets': path.resolve(__dirname, 'src/assets')
-         // 可根据后续开发情况自行添加
-         },
-     },
-   })
-   ```
+2. 清理dist，`package.json`中配置
 
-### 2. 自动导入ref等hook
-
-> 使用ref、reactive、computed等时不再需要手动import
-
-1. 下载`unplugin-auto-import`插件
-   
-   ```shell
-   pnpm add -D unplugin-auto-import    
-   ```
-
-2. `vite.config.ts`中配置
-   
-   ```ts
-   // vite.config.ts
-   import AutoImport from 'unplugin-auto-import/vite'
-   
-   export default defineConfig({
-     plugins: [
-       AutoImport({
-           imports: ['vue', 'vue-router', 'pinia'],
-           dts: './auto-import.d.ts',
-           eslintrc: {
-               // 已存在文件设置默认 false，需要更新时再打开，第一次使用请设置为true
-               enabled: false,
-               filepath: './.eslintrc-auto-import.json',
-               globalsPropValue: true
-           }
-       }),
-     ],
-   })
-   ```
-   
-    设置完成之后根目录会自动生成`auto-import.d.ts`和`.eslintrc-auto-import.json`两个文件，如果没有就运行一下项目`pnpm dev`
-
-3. `eslint.config.js`中配置（注意扁平化后和引用方式和以前不一样了）
-   
-   ```js
-   import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
-   export default [
-       {
-           languageOptions: {
-               globals: {
-                   // 其他配置
-                   ...autoImport.globals
-               }
-           }
-       },
-       // 其他配置
-   ]
-   ```
-
-4. `tsconfig.app.json`中加入`auto-import.d.ts`
-   
    ```json
    {
-       // 其他配置
-       "include": ["auto-import.d.ts", ...] // 如果不加这个还是会报错
+     "scripts": {
+       "dev": "vite",
+       "clean": "rimraf dist",  // 清理 dist 目录
+       "build": "npm run clean && vite build",  // 先清理再构建
+       "preview": "vite preview"
+     }
+   }
+   // or
+   {
+     "scripts": {
+       "dev": "vite",
+       "build": "rimraf dist && vite build",  // 先清理再构建
+       "preview": "vite preview"
+     }
    }
    ```
 
-### 3. 自动导入自定义组件或UI组件
+3. 补充：为什么不用build.emptyOutDir
 
-> 自定义的组件无需手动import，UI组件无需手动注册
+   `vite`自身支持构建时自动清理`dist`目录：**build.emptyOutDir: true**，但是仍然会使用`rimraf`的原因是：1. 有些时候build.emptyOutDir 会失效；2. rimraf能够更加灵活的配置清理策略
 
-1. 下载`unplugin-vue-components`插件
-   
+   比如：
+
+   - 清理项目环境：本地开发时依赖混乱，想彻底清理、切换项目分支后依赖异常时可以使用的命令，可以确保依赖环境完全干净，日常开发中无需频繁执行，仅在必要时使用。
+
+     ```json
+     {
+       "scripts": {
+         "clean:cache": "rimraf .eslintcache && rimraf pnpm-lock.yaml && rimraf node_modules && pnpm store prune && pnpm install",
+       }
+     }
+     # rimraf .eslintcache：删除临时文件
+     # rimraf pnpm-lock.yaml 删除锁文件
+     # rimraf node_modules 删除本地依赖
+     # pnpm store prune： 清理 pnpm 的全局存储（store）中未被引用的包，避免存储冗余的包版本
+     # pnpm install 重新安装依赖
+     ```
+
+   -  结合 `NODE_OPTIONS` 调整内存限制，防止内存溢出
+
+     ```json
+     "build": "rimraf dist && NODE_OPTIONS=--max-old-space-size=8192 vite build"
+     ```
+
+### 2. 批量优化SVG（可选）
+
+> `svgo` 一个基于 Node.js 的 **SVG 优化工具**，通过移除冗余代码（如元数据、注释、隐藏元素等）减小文件体积，优化后，SVG 文件体积通常能减少 **30%~70%**，且保持完全相同的渲染效果。
+
+1. 安装
+
+   ```shell
+   pnpm add svgo -D
    ```
-   pnpm add -D unplugin-vue-components
+
+2. 在`package.json`中使用
+
+   ```json
+   {
+     "scripts": {
+       "svgo": "svgo -f . -r",  // 递归优化当前目录下所有 SVG，可以在构建前使用
+       // "svgo": "svgo -f ./src/assets/icons -r"  // 指定具体目录
+     }
+   }
    ```
 
-2. `vite.config.ts`中配置
    
-   ```ts
-   // 这里只写了自定义组件的配置，ui组件的自动导入在每个框架教程中应该都有说明，也会下载这个插件，这里就不作说明了
-   import Components from 'unplugin-vue-components/vite'
-   
-   export default defineConfig({
-     plugins: [
-       Components({
-           // src下所有的components文件夹组件都可以被自动导入
-           dirs: ['src/**/components'],
-           extensions: ['vue'],
-           dts: 'src/components.d.ts',
-           deep: true // 搜索子目录
-       }),
-     ],
-   })
-   ```
 
-3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
-
-### 4. 打包使用 gzip 压缩 
+### 3. 打包使用 gzip 压缩 （可选）
 
 > 打包压缩使用了`vite-plugin-compression2` 这个 Vite 插件，用于在构建阶段自动压缩生成的文件。它能够生成 `.gz`（gzip）或 `.br`（Brotli）压缩文件，以减少静态资源的文件大小，从而提高网站的加载速度和性能，尤其是首屏加载的效率
 >
@@ -908,7 +870,128 @@ export default defineConfig({
 
    
 
+
+## 六、添加其他插件/配置
+
+> 提高代码编写效率
+
+### 1. 使用文件路径别名
+
+1. 使用自定义符号代替指定路径，简化模块导入路径。
    
+   ```shell
+   pnpm add @types/node --save-dev
+   ```
+
+2. 进入`vite.config.ts`
+   
+   ```js
+   import path from 'path'
+   
+   export default defineConfig({
+   ......
+   resolve: {
+	// alias 别名配置不仅在 JavaScript 的 import 语句中生效，在 CSS 代码的 `@import` 和 `url`导入语句中也同样生效。
+     alias: {
+         '@': path.resolve(__dirname, 'src'), // @代替src
+         '@c': path.resolve(__dirname, 'src/components'),
+         '@assets': path.resolve(__dirname, 'src/assets')
+         // 可根据后续开发情况自行添加
+         },
+     },
+   })
+   ```
+
+### 2. 自动导入ref等hook
+
+> 使用ref、reactive、computed等时不再需要手动import
+
+1. 下载`unplugin-auto-import`插件
+   
+   ```shell
+   pnpm add -D unplugin-auto-import    
+   ```
+
+2. `vite.config.ts`中配置
+   
+   ```ts
+   // vite.config.ts
+   import AutoImport from 'unplugin-auto-import/vite'
+   
+   export default defineConfig({
+     plugins: [
+       AutoImport({
+           imports: ['vue', 'vue-router', 'pinia'],
+           dts: './auto-import.d.ts',
+           eslintrc: {
+               // 已存在文件设置默认 false，需要更新时再打开，第一次使用请设置为true
+               enabled: false,
+               filepath: './.eslintrc-auto-import.json',
+               globalsPropValue: true
+           }
+       }),
+     ],
+   })
+   ```
+   
+    设置完成之后根目录会自动生成`auto-import.d.ts`和`.eslintrc-auto-import.json`两个文件，如果没有就运行一下项目`pnpm dev`
+
+3. `eslint.config.js`中配置（注意扁平化后和引用方式和以前不一样了）
+   
+   ```js
+   import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
+   export default [
+       {
+           languageOptions: {
+               globals: {
+                   // 其他配置
+                   ...autoImport.globals
+               }
+           }
+       },
+       // 其他配置
+   ]
+   ```
+
+4. `tsconfig.app.json`中加入`auto-import.d.ts`
+   
+   ```json
+   {
+       // 其他配置
+       "include": ["auto-import.d.ts", ...] // 如果不加这个还是会报错
+   }
+   ```
+
+### 3. 自动导入自定义组件或UI组件
+
+> 自定义的组件无需手动import，UI组件无需手动注册
+
+1. 下载`unplugin-vue-components`插件
+   
+   ```
+   pnpm add -D unplugin-vue-components
+   ```
+
+2. `vite.config.ts`中配置
+   
+   ```ts
+   // 这里只写了自定义组件的配置，ui组件的自动导入在每个框架教程中应该都有说明，也会下载这个插件，这里就不作说明了
+   import Components from 'unplugin-vue-components/vite'
+   
+   export default defineConfig({
+     plugins: [
+       Components({
+           // src下所有的components文件夹组件都可以被自动导入
+           dirs: ['src/**/components'],
+           extensions: ['vue'],
+           dts: 'src/components.d.ts',
+           deep: true // 搜索子目录
+       }),
+     ],
+   })
+   ```
+
+3. 配置好后运行一下项目就会生成`components.d.ts`文件，项目中导入组件的import语句可以删掉，项目不会报错，也可以正常运行。
 
 ### 其他可选配置可以参考下一篇文章【为脚手架集成额外功能】
 
