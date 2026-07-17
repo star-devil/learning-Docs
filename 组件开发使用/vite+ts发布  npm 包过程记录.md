@@ -290,7 +290,7 @@ pnpm create vite your-package-name --template vue-ts
     "repository": {
       "type": "git",
       "url": "项目的 github 地址（如果有的话）" // 和 github 关联
-    },
+    }, 
     "license": "MIT", // 选择合适的许可
   }
   ```
@@ -396,6 +396,9 @@ pnpm create vite your-package-name --template vue-ts
   # 或者把 dist-tags添加到特定版本：
   npm dist-tag add packagename@xx.xx.xx stable
   
+  # 如果是发布scoped package,需要加`--access public`参数
+  npm publish --access public
+ 
   # 卸载 npm 包命令：
   npm unpublish <package-name>  -f
   
@@ -443,3 +446,109 @@ pnpm create vite your-package-name --template
 ### 5. 发布
 
 - 测试发布和发布流程和上述发布vue组件相同
+
+## 补充：使用changeset自动管理版本
+
+>完成首次发布之后可以使用changeset自动管理版本
+### 安装插件
+
+```json
+// 安装
+ pnpm add -D @changesets/cli
+ // 初始化，生成.changeset文件夹
+  npx changeset init
+```
+### 修改配置
+
+```json
+// .changeset\config.json
+	"access": "public", //把restricted改成public
+  
+/** 
+restricted-私有包：只有组织成员和有权限的人才能查看/下载，公司内部项目、未开源的项目
+public-公共包：任何人都可以在 npm 上查看和下载，开源项目、对外发布的包
+**/
+
+// package.json
+    "typecheck": "pnpm -r typecheck",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "changeset:status": "changeset status"
+    
+// 如果发布两个关联的包，比如一个包中要依赖另一个发布包，则依赖声明可以写成workspace:*,会自动关联。特别注意，首次发布时需要手动填写为首个版本号，后续更新版本使用changeset会自动替换为实际版本号
+```
+### 验证配置是否正常
+
+```bash
+npx changeset status
+```
+
+### 日常工作流
+graph TD
+    A[开发功能/Bug修复] --> B[pnpm changeset]
+    B --> C[选择影响的包]
+    C --> D[选择版本类型: patch/minor/major]
+    D --> E[写变更说明]
+    E --> F[git commit 提交 changeset 文件]
+    F --> G{准备发布?}
+    G -->|是| H[pnpm changeset:version]
+    H --> I[changeset 自动消费, 版本号升级, CHANGELOG 生成]
+    I --> J[git commit 版本提交]
+    J --> K[pnpm build]
+    K --> L[pnpm changeset:publish]
+    L --> M[自动发布包到 npm]
+
+####  每一步的详细命令
+
+#####  Step 1：添加变更记录
+
+```bash
+pnpm changeset
+```
+
+交互式选择：
+
+- 方向键选择要升级的包（空格选中/取消）
+- 选择版本类型：`patch`（bug修复）、`minor`（新功能）、`major`（破坏性变更）。默认是major，非此类型直接enter会进入patch，以此类推
+- 输入变更描述（中文/英文都可以）
+
+也会在 `.changeset/` 下生成一个 `.md` 文件
+
+##### Step 2：提交 changeset 文件
+
+```bash
+git add .changeset/
+git commit -m "changeset: add changeset record"
+```
+
+> 日常开发可以攒多个 changeset 文件，等准备好发布时一次性消费。
+
+##### Step 3：消费 changeset，升级版本
+
+```bash
+pnpm changeset:version
+```
+
+这一步会：
+
+- 删除已消费的 changeset 文件
+- 自动更新包版本号/自动更新依赖版本号
+- 自动生成/更新 `CHANGELOG.md`
+
+##### Step 4：构建 + 发布
+
+```bash
+pnpm build                          # 确保 dist 是最新的
+git add . && git commit -m "release"  # 提交版本变更
+pnpm changeset:publish              # 发布到 npm，指定发布版本tag和上述一致
+```
+ **注意**：如果你的npm设置了2FA，上述publish时需要加上如下的`--otp`参数，填写自己的验证码，否则命令行中会提示发布成功，实际没有发布。
+```bash
+pnpm changeset:publish --otp=123456
+```
+
+### 确认包是否发布成功
+```bash
+npm view <package-name> version
+```
