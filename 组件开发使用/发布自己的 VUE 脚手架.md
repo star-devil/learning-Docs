@@ -36,11 +36,12 @@
 
 ## 二、环境准备
 
-- `node.js（>=v20）`
-- `npm`
-- `pnpm`
-- `Vite 脚手架`
-- `npm账号/github账号`
+- `Node.js（>=18.12.0，推荐 20 LTS）`
+- `pnpm（>=8.0.0）`
+- `npm 账号 / GitHub 账号`
+- `Vite 脚手架基础模板`
+
+> 💡 **为什么放宽版本要求？** 原项目要求 Node >= 21，但这个版本是非 LTS 版本，大多数团队还在用 Node 18/20。脚手架应该松版本约束，避免用户因本地环境而无法使用。
 
 ## 三、初始化项目
 
@@ -81,16 +82,30 @@ console.log('hello vvt')
 
 ```json
 {
-  "name": "create-vvt", // 脚手架的名称，若要发布到 npm，必须唯一。创建命令也是这个
+  "name": "create-vvt", // 脚手架的名称，若要发布到 npm，必须唯一
   "version": "0.1.0", // 每次发布需要更新版本号
   "type": "module",
   "description": "一个基于 Vite + Vue3 + TypeScript/JavaScript 的项目模板脚手架",
   "bin": {
-    "vvt": "bin/cli.js" // 用于配置指令，指令由key、value组成，key是指令名，value为运行指令时运行的文件
+    "create-vvt": "bin/cli.js", // ⚠️ 必须同时有 create-vvt 和 vvt 两个 key
+    "vvt": "bin/cli.js"         // pnpm dlx 要求 bin 名与包名一致，npm 无此限制
+  },
+  "files": [
+    "bin",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18.12.0",
+    "pnpm": ">=8.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
-  ...
 }
 ```
+
+> ⚠️ **bin 字段的两个 key**：这是踩坑后得出的结论。`pnpm dlx create-vvt` 会优先查找名为 `create-vvt` 的 bin，如果找不到就直接报错 `'create-vvt' 不是内部或外部命令`。而 npm 有 fallback 机制（取第一个 bin），所以 npm 用户不受影响。同时保留 `vvt` 是为了兼容 `pnpm create vvt` 和直接的 `vvt` 命令调用。
 
 ### 4. 本地测试
 
@@ -410,127 +425,271 @@ graph TD
    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
    ```
 
-## 五、双平台发布：npm 与 GitHub Packages
+## 五、自动版本管理与双平台发布（changesets + GitHub Actions）
 
-为了能更便捷的在双平台进行发布，在项目里面做了特殊配置。
+手动改版本号 + 手动发布容易出错。实际项目中改用 **changesets** + **GitHub Actions** 实现自动化版本管理和双平台发布。
 
-### 1. 发布到`npm`
+### 发布流程总览
 
-发布到`npm`配置可以参考我这篇文章：[vite+ts发布 npm 包过程记录](https://juejin.cn/post/7485677817868386319#heading-13)
+```
+开发 → pnpm changeset → 提交 → PR 合并到 cli 分支
+                                      ↓
+                            GitHub Actions 自动触发
+                                      ↓
+                      ┌───────────────┴──────────────┐
+                      ↓                               ↓
+            changesets publish                  publish-github.js
+            (npm registry)                     (GitHub Packages)
+           create-vvt@x.y.z              @star-devil/create-vvt@x.y.z
+```
 
-### 2. 发布到`github pacakges`
+### 1. 安装 changesets
 
-下面是使用 npm 注册表发布到`github pacakges`的简单说明(👉[官方教程地址](https://docs.github.com/zh/packages/learn-github-packages/publishing-a-package))：
+```bash
+pnpm add -D @changesets/cli
+```
 
-1. 创建自己的`personal access token (classic)`
+创建 `.changeset/config.json`：
 
-   - 在 GitHub 任意页面的右上角，单击个人资料照片，然后单击 “设置/Settings”。
+```json
+{
+  “$schema”: “https://unpkg.com/@changesets/config@3.1.1/schema.json”,
+  “changelog”: “@changesets/cli/changelog”,
+  “commit”: false,
+  “access”: “public”,
+  “baseBranch”: “cli”
+}
+```
 
-   - 在左侧边栏中，单击“ 开发人员设置/Developer settings”。
+> 💡 `baseBranch` 是关键配置，指向你的发布分支。单包项目不需要 `ignore`、`fixed`、`linked` 等字段。
 
-   - 请在左侧边栏的“ Personal access tokens”下，单击“Tokens(classic)” 。
+### 2. 配置 package.json
 
-   - 单击“生成新令牌/Generate new token”。
+```json
+{
+  “packageManager”: “pnpm@11.10.0”,
+  “bin”: {
+    “create-vvt”: “bin/cli.js”,
+    “vvt”: “bin/cli.js”
+  },
+  “scripts”: {
+    “changeset”: “changeset”,
+    “changeset:version”: “changeset version”,
+    “changeset:publish”: “changeset publish”,
+    “github:publish”: “node publish-github.js”
+  },
+  “engines”: {
+    “node”: “>=18.12.0”,
+    “pnpm”: “>=8.0.0”
+  },
+  “publishConfig”: {
+    “access”: “public”,
+    “registry”: “https://registry.npmjs.org”
+  }
+}
+```
 
-   - 选择“Generate new token(classic)”。
+> ⚠️ **`bin` 字段必须同时包含 `create-vvt` 和 `vvt`**。`pnpm dlx create-vvt` 严格按包名查找 bin，找不到就直接报错。npm 有 fallback 所以不受影响。
 
-   - 在“备注”字段中，为令牌提供一个描述性名称。
+### 3. 创建 GitHub Actions 工作流
 
-   - 要为令牌提供到期时间，请选择“到期时间”，然后选择默认选项或单击“自定义”以输入日期 。
+`.github/workflows/release.yml`：
 
-   - 选择要授予此令牌的作用域。发布 packages 包必须要要选择`write:packages`、`read:packages`、`delete:packages`
+```yaml
+name: Release
 
-   - 单击“生成令牌”。
+on:
+  push:
+    branches:
+      - cli
 
-   - 要将新令牌复制到剪贴板，保存好。
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
-   - 如果不再需要 personal access token，请删除。
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
 
-     
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10  # ⚠️ 锁版本！latest(11) 要求 Node >= 22
 
-2. 使用 `personal access token (classic)` 向 `GitHub Packages` 验证
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
-   在脚手架项目根目录创建`.npmrc`文件，然后添加到`.gitignore`中。内容如下：
+      # 显式配置 .npmrc，确保 pnpm publish 能拿到 token
+      - name: Setup npm auth
+        run: |
+          echo “//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}” >> .npmrc
+          echo “registry=https://registry.npmjs.org” >> .npmrc
 
-   ```shell
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-   @star-devil:registry=https://npm.pkg.github.com
-   ```
+      - run: pnpm install --frozen-lockfile
 
-   `${GITHUB_TOKEN}`就是上个步骤生成的`personal access token`，通过在命令行使用`export`语句传入，更安全。`star-devil`是我 github的昵称
+      - name: Create Release PR or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          version: pnpm changeset version
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-3. 创建`publish-github.js`文件：为了更方便的同时在 npm 和 github 上发布包
+      - name: Publish to GitHub Packages
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node publish-github.js
+```
+
+### 4. GitHub Secrets 配置
+
+在仓库 `Settings → Secrets and variables → Actions` 添加：
+
+| Secret      | 值                           | 说明                                                                                                               |
+| ----------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `NPM_TOKEN` | npm 的 Granular Access Token | npmjs.com → Access Tokens → New Granular Access Token → 选 “All packages” + “Read and write”，**如果npm开了2fa必须 2FA** |
+
+`GITHUB_TOKEN` 是 Actions 自动注入的，无需手动配置。
+
+### 5. 发布操作
+
+```bash
+# 日常开发：创建 changeset
+pnpm changeset
+# 按提示选择版本类型（patch / minor / major）并写变更说明
+git add . && git commit -m “feat: xxx”
+git push
+
+# changesets 会自动创建 “Version Packages” PR
+# Merge 该 PR → 自动发布到 npm + GitHub Packages
+```
+
+### 6. publish-github.js（双平台发布脚本）
 
 ```js
 import fs from 'fs';
 import { execSync } from 'child_process';
 
-// 检查环境变量
 if (!process.env.GITHUB_TOKEN) {
   console.error('错误: GITHUB_TOKEN 环境变量未设置');
-  console.error('请使用以下命令设置: export GITHUB_TOKEN=your_token');
   process.exit(1);
 }
 
 try {
-  // 读取原始 package.json
   const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
-  // 备份原始 package.json
+  // 备份
   fs.writeFileSync('./package.json.backup', JSON.stringify(pkg, null, 2));
 
-  // 修改为 GitHub Packages 所需的格式
+  // GitHub Packages 要求 scoped 包名
   pkg.name = '@star-devil/create-vvt';
   pkg.publishConfig = {
     registry: 'https://npm.pkg.github.com',
     access: 'public'
   };
 
-  // 写入修改后的 package.json
   fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
-
   console.log('Modified package.json for GitHub Packages');
 
-  // 执行发布
-  execSync('npm publish', { stdio: 'inherit' });
+  // 使用 pnpm 发布
+  execSync('pnpm publish', { stdio: 'inherit' });
   console.log('Published to GitHub Packages successfully!');
 } catch (error) {
   console.error('Error:', error);
 } finally {
-  // 恢复原始 package.json
   if (fs.existsSync('./package.json.backup')) {
     fs.copyFileSync('./package.json.backup', './package.json');
     fs.unlinkSync('./package.json.backup');
     console.log('Restored original package.json');
   }
 }
-
 ```
 
-4. `package.json`中增加发布脚本命令
+### 7. 仓库必要设置
+
+`Settings → Actions → General → Workflow permissions`：
+- 选 **”Read and write permissions”**
+- 勾上 **”Allow GitHub Actions to create and approve pull requests”**
+
+
+## 六、发布踩坑记录
+
+### 坑 1：Windows 上 pnpm store 双路径缓存
+
+**现象**：`pnpm create vvt` 始终下载旧版代码，即使 `latest` tag 已指向新版本。清空 `pnpm store prune` 和 npm 缓存都不管用。
+
+**根因**：Windows 上 pnpm 在每个盘符都有一个独立的 store（`C:\Users\<name>\AppData\Local\pnpm\store` 和 `D:\.pnpm-store`）。`pnpm dlx` 解析包时先在本地 store 查找元数据，如果 C 盘 store 还残留旧版本的链接，就直接用了，根本不去查 npm registry。
+
+**解决**：两个 store 全部删除重建：
+
+```powershell
+Remove-Item -Recurse -Force "D:\.pnpm-store"
+Remove-Item -Recurse -Force "C:\Users\$env:USERNAME\AppData\Local\pnpm\store"
+```
+
+### 坑 2：bin 字段缺少 `create-vvt` 导致 pnpm dlx 报错
+
+**现象**：`pnpm dlx create-vvt@latest` 报 `'create-vvt' 不是内部或外部命令`，但 `npm create vvt@latest` 正常。
+
+**根因**：npm 的 `exec` 在找不到同名 bin 时会 fallback 到第一个 bin。pnpm 不做 fallback，严格按包名查找。
+
+**解决**：
 
 ```json
-{
-  "scripts": {
-    "npm:publish": "npm publish", // 发布到 npm 使用这个命令
-    "github:publish": "node publish-github.js" // 发布到 github 使用这个命令
-	},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/<github-name>/<package-name>.git"
-  },
-  "homepage": "https://github.com/<github-name>/<package-name>",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
-  },
+"bin": {
+  "create-vvt": "bin/cli.js",  // 必加！pnpm 用的
+  "vvt": "bin/cli.js"          // 兼容旧命令
 }
 ```
 
-## 六、完整源码与使用指南
+### 坑 3：pnpm/action-setup 版本与 Node 版本不兼容
 
-- **GitHub 仓库**: [vite-vue3-ts-cli](https://github.com/your-repo-link)
+**现象**：GitHub Actions 报 `node:sqlite` 模块不存在。
+
+**根因**：`pnpm/action-setup@v4` 的 `version: latest` 在 2025 年解析到 pnpm v11，它要求 Node >= 22，但 workflow 配置了 `node-version: 20`。
+
+**解决**：锁 pnpm 版本到 v10：
+
+```yaml
+- uses: pnpm/action-setup@v4
+  with:
+    version: 10  # 不用 latest
+```
+
+### 坑 4：NPM_TOKEN 类型不对导致 404
+
+**现象**：`changesets publish` 报 `E404 Not Found - PUT https://registry.npmjs.org/create-vvt`。
+
+**根因**：npm 的 Automation Token 才能用于 CI 无交互发布。Publish 类型需要 2FA 验证，CI 无法响应。
+
+**解决**：在 npm 生成 **Granular Access Token** → 选 "All packages" → "Read and write" → 勾上 ”Bypass two-factor authentication (2FA)”
+
+### 坑 5：GitHub Actions 无法创建 PR
+
+**现象**：changesets 报 `GitHub Actions is not permitted to create pull requests`。
+
+**解决**：仓库 `Settings → Actions → General → Workflow permissions` → 选 "Read and write permissions" + 勾选 "Allow GitHub Actions to create and approve pull requests"。
+
+## 七、完整源码与使用指南
+
+- **GitHub 仓库**: [vite-vue3-ts-cli](https://github.com/star-devil/vite-vue3-ts-cli/tree/cli)
 - **npm 安装**: [create-vvt](https://www.npmjs.com/package/create-vvt)
 
-当然，还有很多功能可以扩充和修改，后面会继续深入研究。完整代码可以查看我的 github 仓库～谢谢～
+```bash
+# 推荐：始终加 @latest 避免缓存问题
+pnpm create vvt@latest [项目名称]
+```
+
+> 📝 本文记录了从手动发布到 changesets 自动化的完整演进过程。踩过的坑都列在第六章了，希望能帮你少走弯路～

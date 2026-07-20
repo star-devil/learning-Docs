@@ -485,8 +485,8 @@ npx changeset status
 ```
 
 ### 日常工作流
-graph TD
-    A[开发功能/Bug修复] --> B[pnpm changeset]
+```graph TD
+A[开发功能/Bug修复] --> B[pnpm changeset]
     B --> C[选择影响的包]
     C --> D[选择版本类型: patch/minor/major]
     D --> E[写变更说明]
@@ -499,6 +499,7 @@ graph TD
     K --> L[pnpm changeset:publish]
     L --> M[自动发布包到 npm]
 
+```
 ####  每一步的详细命令
 
 #####  Step 1：添加变更记录
