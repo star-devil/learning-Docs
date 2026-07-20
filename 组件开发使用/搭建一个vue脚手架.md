@@ -580,7 +580,7 @@ export default defineConfig({
 4. 手动在项目根目录添加`commitlint.config.ts`文件，用于编写提交信息的校验规则：
    
    ```ts
-   module.exports = {
+   export default {
      ignores: [(commit) => commit.includes('init')],
      extends: ['@commitlint/config-conventional'],
      rules: {
@@ -715,11 +715,13 @@ export default defineConfig({
      # pnpm install 重新安装依赖
      ```
 
-   -  结合 `NODE_OPTIONS` 调整内存限制，防止内存溢出
+   -  结合 `NODE_OPTIONS` 调整内存限制，防止内存溢出（仅限 macOS/Linux）
 
      ```json
      "build": "rimraf dist && NODE_OPTIONS=--max-old-space-size=8192 vite build"
      ```
+
+     > ⚠️ `VAR=value command` 语法在 Windows 上会失败。脚手架默认模板已移除 `NODE_OPTIONS`，改为不带内存限制的跨平台脚本。如需使用，请安装 `cross-env`（`pnpm add cross-env -D`）后用 `cross-env NODE_OPTIONS=...` 包装。
 
 ### 2. 批量优化SVG（可选）
 
